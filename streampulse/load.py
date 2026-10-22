@@ -4,8 +4,10 @@ from pathlib import Path
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-RAW_YOUTUBE_DIR = PROJECT_ROOT / "data" / "raw" / "youtube"
+RAW_DIR = PROJECT_ROOT / "data" / "raw"
+RAW_YOUTUBE_DIR = RAW_DIR / "youtube"
 COUNTRIES = ("IN", "US", "GB")
+IMDB_TITLE_TYPES = ["movie", "tvMovie", "tvSpecial", "tvSeries", "tvMiniSeries"]
 
 # description and thumbnail_link are left out: the analysis uses neither,
 # and description alone is most of the memory used by the raw files.
@@ -45,3 +47,31 @@ def load_category_names(countries=COUNTRIES, raw_dir=RAW_YOUTUBE_DIR):
             for item in json.load(category_file)["items"]:
                 category_names[int(item["id"])] = item["snippet"]["title"]
     return category_names
+
+
+def load_netflix(raw_dir=RAW_DIR / "netflix"):
+    """Load the raw Netflix catalog."""
+    return pd.read_csv(raw_dir / "netflix_titles.csv")
+
+
+def load_imdb_rated_titles(raw_dir=RAW_DIR / "imdb"):
+    """Load IMDb movies and series that have a rating, with their rating and vote count."""
+    # IMDb writes missing values as \N instead of leaving the field empty.
+    basics = pd.read_csv(
+        raw_dir / "title.basics.tsv.gz",
+        sep="\t",
+        na_values=r"\N",
+        usecols=["tconst", "titleType", "primaryTitle", "originalTitle", "startYear", "genres"],
+        dtype={"startYear": "Int64"},
+    )
+    ratings = pd.read_csv(raw_dir / "title.ratings.tsv.gz", sep="\t", na_values=r"\N")
+    rated_titles = basics[basics["titleType"].isin(IMDB_TITLE_TYPES)].merge(ratings, on="tconst")
+    return rated_titles.rename(columns={
+        "titleType": "title_type",
+        "primaryTitle": "primary_title",
+        "originalTitle": "original_title",
+        "startYear": "start_year",
+        "genres": "imdb_genres",
+        "averageRating": "imdb_rating",
+        "numVotes": "imdb_votes",
+    })
