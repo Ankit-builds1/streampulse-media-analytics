@@ -158,6 +158,14 @@ def save_models(classifier, regressor, categories):
     CATEGORIES_PATH.write_text(json.dumps(categories, indent=2), encoding="utf-8")
 
 
+def load_saved_models():
+    """The saved classifier, regressor and training categories."""
+    classifier = lgb.Booster(model_file=str(CLASSIFIER_PATH))
+    regressor = lgb.Booster(model_file=str(REGRESSOR_PATH))
+    categories = json.loads(CATEGORIES_PATH.read_text(encoding="utf-8"))
+    return classifier, regressor, categories
+
+
 if __name__ == "__main__":
     features = pd.read_parquet(FEATURES_PATH)
     classifier, regressor, categories, results = evaluate_all(features)
