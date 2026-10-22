@@ -1,0 +1,5 @@
+rule,rows_changed
+duration moved out of rating column,3
+date_added leading space stripped,88
+date_added missing,10
+duplicate listing dropped,5
