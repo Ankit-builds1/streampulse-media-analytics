@@ -95,3 +95,33 @@ linear regression on the log scale with category, country-period and log(views),
 **Limitations.** The cause of the India break is unknown, so Indian engagement from different periods should not
 be compared directly. Only trending videos are included. Likes and comments can be inflated by bots or giveaways.
 The regression's category effects are averages over countries.
+
+## 4. Best time to publish
+
+Notebook: `notebooks/06_publish_time.ipynb`
+
+**Question.** Does the day and hour a video is published affect how well it does?
+
+**Method.** The data has only trending videos, so it cannot show whether a time slot changes the chance of
+trending, and analysis 1 showed time to trend depends on the list's capture time. The question answered is:
+among trending videos, do those published at some local times reach more people? Outcome: log peak views for
+172,401 completed runs. Day-by-hour heatmaps of the difference from the country average, raw and after
+controlling for category and channel strength (the channel's average log peak views on its other trending
+videos, standing in for audience size). Type II ANOVA F-tests with partial eta squared.
+
+**Finding.**
+
+- Raw differences look large: by upload hour, peak views range from about 50% below the country average (India,
+  05:00 IST) to about 120% above (UK, 05:00, which is midnight US Eastern). The day-by-hour slot explains 3.2%
+  (India) to 6.2% (UK) of the variation.
+- Most of it is the channel, not the clock. Channel strength explains 55% to 63% of the variation, over 200 times
+  as much as upload hour. After controls, hour effects stay between -11% and +14% and the full slot pattern explains
+  0.6% to 1.2%.
+- The adjusted effects are still statistically significant (p below 1e-9) but small in practical terms. The one
+  pattern that survives is that overnight uploads (00:00 to 05:00 local) do about 5% to 14% better in the US and
+  UK, likely because those slots hold scheduled big releases such as Friday-midnight music.
+- Business answer: there is no universal best time. Who uploads matters far more than when.
+
+**Limitations.** Only trending videos are included. Channel strength is a proxy from other trending videos, and
+4.5% of runs (single-video channels) are left out of the adjusted models. US local time uses Eastern time. The
+analysis is observational, so remaining effects can still come from unmeasured factors such as planned launches.
