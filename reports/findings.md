@@ -25,6 +25,8 @@ differences, and logistic regression with category and upload hour as controls.
   category, India's odds of trending by the next day fall from 5.5 to 2.7 times the US's (95% CI 2.6 to 2.8).
   The UK and US are about equal (1.06).
 - About 95% of videos that trended did so within two days of upload, in all three countries.
+- India's data has a break on 2022-10-06 (see analysis 3). India's share trending by the next day is the same on
+  both sides of it (86.9% before, 87.9% after), so this finding holds in both periods.
 
 **Limitations.** Only videos that trended are in the data, so this shows how fast successful videos got there,
 not what makes a video trend. The capture time is not recorded, so time to trend is measured in calendar days,
@@ -54,7 +56,42 @@ exit rate for the shape of a video's life on the list.
 - Category differences within a country are small: RMST ranges 2.72 to 4.02 days (India), 5.06 to 5.92 (US) and
   4.99 to 5.94 (UK). Sports is the shortest-lived category in the US and UK.
 - With so little censoring, Kaplan-Meier confirmed the simple medians from the SQL queries rather than changing them.
+- India's average time on the list is the same on both sides of the 2022-10-06 data break (3.24 days before,
+  3.03 after), so the India gap is not an artefact of it.
 
 **Limitations.** Days on the list counts appearances, and 7.6% of videos have a gap in their run (dropping off and
 returning, or one of the 20 days with no list). The list holds at most 200 videos, so duration also depends on
 competition from other videos. The analysis is descriptive: it shows where videos last longer, not why.
+
+## 3. Engagement ratios by category
+
+Notebook: `notebooks/05_engagement.ipynb`
+
+**Question.** For the same number of views, which categories get more likes and comments, and how do countries
+compare?
+
+**Method.** Likes and comments per 1,000 views on each video's first trending day, for about 173,000
+video-country pairs. Videos with ratings or comments turned off, or hidden view counts, are excluded from the
+relevant measure. Medians with distribution-free confidence intervals, Kruskal-Wallis with epsilon squared, and
+linear regression on the log scale with category, country-period and log(views), using HC1 robust standard errors.
+
+**Finding.**
+
+- Measuring on the right day matters. Likes per 1,000 views are about 20% lower on a video's peak-views day than
+  on its first trending day (US 54.6 vs 42.5). US and UK videos stay on the list longer, so a peak-day comparison
+  would understate them against India. The earlier SQL query and EDA chart used the peak day and were updated.
+- Category drives likes. Within a country it explains 20% (India) to 37% (UK) of the variation. Averaged over
+  countries, Comedy gets 99.5% more likes per view than Entertainment (95% CI 96 to 103), Music 89% more, Sports 44%
+  fewer and News & Politics 62% fewer. News & Politics has the fewest likes per view in every country.
+- Rankings differ by country: Music and Comedy lead in the US and UK, Gaming (97.5) and Science & Technology (92.7)
+  in India, where Entertainment gets 24.9, half its US level.
+- Country drives comments. Indian videos get 58% to 63% fewer comments per view than US videos after controls,
+  fewer in 11 of 13 categories. The UK is 8% below the US. Ten times more views means 33% fewer comments per 1,000
+  views but only 4% fewer likes.
+- India's data has a break on 2022-10-06: the daily list stopped holding 200 videos and likes per view dropped from
+  about 60 to about 42 per 1,000 that day, in every category. Before the break Indian likes per view matched the US
+  (+2.9%); after it they are 29.5% lower. The cause is not in the data.
+
+**Limitations.** The cause of the India break is unknown, so Indian engagement from different periods should not
+be compared directly. Only trending videos are included. Likes and comments can be inflated by bots or giveaways.
+The regression's category effects are averages over countries.
