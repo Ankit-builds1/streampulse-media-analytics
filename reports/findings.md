@@ -213,3 +213,31 @@ and Gini coefficients per country with 95% bootstrap confidence intervals, yearl
 
 **Limitations.** Channels that never trended are not in the data, so concentration across all of YouTube is
 higher. Gini depends on the time window, so only equal windows are compared.
+
+## 8. 30-day view forecast for US Music
+
+Notebook: `notebooks/10_view_forecast.ipynb`
+
+**Question.** How many views will trending US Music videos gain per day over the next 30 days?
+
+**Method.** Daily views gained by US Music videos on the trending list (sum of each video's view increase since
+its previous appearance), 1,342 days with 20 missing days interpolated. Five forecasters: naive, seasonal naive,
+4-week weekday average, Holt-Winters (damped trend, weekly season, log scale) and SARIMA(1,1,1)(0,1,1,7) on log
+views. Rolling-origin evaluation over 10 windows of 30 days, the last being the holdout 16 March to 15 April
+2024. Scores: daily MAPE and the percent error of the 30-day total.
+
+**Finding.**
+
+- SARIMA has the lowest mean daily MAPE (34.7%), with the 4-week weekday average close behind (36.3%); medians are
+  both about 30%. Holt-Winters (41.8%), seasonal naive (42.4%) and naive (58.0%) are worse. Errors vary far more
+  between windows (about 17% to 80%) than between the two best models.
+- For the 30-day total, the 4-week weekday average misses by 12.6% on average with almost no bias (-2.0%); SARIMA
+  misses by 16.2% and under-forecasts by 10%, likely because back-transforming a log forecast gives the median.
+- On the final holdout SARIMA scored 24.4% daily MAPE but undershot the total by 24.7%; the weekday average scored
+  26.3% and -4.5%. SARIMA's 80% interval held 90% of holdout days.
+- The worst window (November 2023, MAPE 80% to 121%) contained one day with 1.2M views gained against 6M to 27M
+  on other days; removing it cuts MAPE by 30 to 50 points.
+- Business answer: a 4-week weekday average is as good as SARIMA for a monthly planning number and easier to explain.
+
+**Limitations.** The series covers views gained while on the trending list only. Interpolated days are smoothed.
+MAPE is unstable for small actual values. Only one series and one horizon were tested.
