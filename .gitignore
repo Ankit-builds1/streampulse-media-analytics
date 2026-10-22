@@ -17,6 +17,7 @@ data/processed/
 *.duckdb.wal
 mlruns/
 mlartifacts/
+mlflow.db
 
 # Editor and OS files
 .vscode/
