@@ -1,0 +1,43 @@
+{
+  "country": [
+    "GB",
+    "IN",
+    "US"
+  ],
+  "category": [
+    "Autos & Vehicles",
+    "Comedy",
+    "Education",
+    "Entertainment",
+    "Film & Animation",
+    "Gaming",
+    "Howto & Style",
+    "Music",
+    "News & Politics",
+    "Nonprofits & Activism",
+    "People & Blogs",
+    "Pets & Animals",
+    "Science & Technology",
+    "Sports",
+    "Travel & Events"
+  ],
+  "upload_weekday_local": [
+    "Friday",
+    "Monday",
+    "Saturday",
+    "Sunday",
+    "Thursday",
+    "Tuesday",
+    "Wednesday"
+  ],
+  "sentiment_label": [
+    "negative",
+    "neutral",
+    "not scored",
+    "positive"
+  ],
+  "india_after_list_change": [
+    "no",
+    "yes"
+  ]
+}
