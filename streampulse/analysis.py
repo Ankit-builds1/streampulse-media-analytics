@@ -74,6 +74,47 @@ def load_first_day_engagement(connection):
     """).df()
 
 
+def load_publish_slots(connection):
+    """One row per completed trending run with local upload weekday and hour, peak views and channel strength."""
+    # Channel strength is the channel's average log peak views on its other trending videos in the same
+    # country. It stands in for audience size, which the data does not record. Runs cut off at either end
+    # of the data are excluded because their peak views are incomplete.
+    return connection.execute(f"""
+        WITH local_upload AS (
+            SELECT
+                *,
+                timezone(
+                    CASE country WHEN 'IN' THEN 'Asia/Kolkata' WHEN 'US' THEN 'America/New_York' ELSE 'Europe/London' END,
+                    published_at AT TIME ZONE 'UTC'
+                ) AS published_local
+            FROM trending_videos
+            WHERE first_trending_date > DATE '{DATA_START}'
+              AND last_trending_date < DATE '{DATA_END}'
+              AND peak_views > 0
+        )
+        SELECT
+            country,
+            video_id,
+            channel_id,
+            category,
+            days_trending,
+            peak_views,
+            ln(peak_views) AS log_peak_views,
+            isodow(published_local) AS upload_weekday,
+            hour(published_local) AS upload_hour,
+            count(*) OVER channel AS channel_trending_videos,
+            (sum(ln(peak_views)) OVER channel - ln(peak_views)) / nullif(count(*) OVER channel - 1, 0)
+                AS channel_strength,
+            CASE
+                WHEN country <> 'IN' THEN country
+                WHEN first_trending_date < DATE '{INDIA_LIST_CHANGE}' THEN 'IN before Oct 2022'
+                ELSE 'IN from Oct 2022'
+            END AS country_period
+        FROM local_upload
+        WINDOW channel AS (PARTITION BY country, channel_id)
+    """).df()
+
+
 def median_with_ci(values, confidence=0.95):
     """Median with a distribution-free confidence interval taken from the order statistics."""
     sorted_values = np.sort(values.dropna().to_numpy())

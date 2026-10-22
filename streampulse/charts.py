@@ -8,6 +8,8 @@ COUNTRY_COLORS = {"IN": "#2a78d6", "US": "#eb6834", "GB": "#1baf7a"}
 SINGLE_SERIES_COLOR = "#2a78d6"
 TYPE_COLORS = {"Movie": "#2a78d6", "TV Show": "#eb6834"}
 BLUE_RAMP = LinearSegmentedColormap.from_list("blue_ramp", ["#fcfcfb", "#cde2fb", "#6da7ec", "#2a78d6", "#104281"])
+# Below average in red, above in blue, neutral gray at zero.
+DIVERGING_RAMP = LinearSegmentedColormap.from_list("red_gray_blue", ["#b52f2f", "#e34948", "#f0efec", "#2a78d6", "#104281"])
 SURFACE = "#fcfcfb"
 SECONDARY_INK = "#52514e"
 
