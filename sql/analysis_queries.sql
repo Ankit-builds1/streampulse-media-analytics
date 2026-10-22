@@ -84,16 +84,23 @@ HAVING count(*) >= 200
 ORDER BY country, pct_within_one_day DESC;
 
 
--- 6. Which categories get the most likes and comments per 1,000 views at peak?
--- Videos with ratings or comments turned off have NULL counts, so median() skips them
--- instead of counting them as zero engagement.
+-- 6. Which categories get the most likes and comments per 1,000 views on their first trending day?
+-- Engagement per view falls as a video ages, and US and UK videos stay on the list longer, so each video
+-- is measured on its first trending day rather than its peak-views day. Videos with ratings or comments
+-- turned off have NULL counts, so median() skips them instead of counting them as zero engagement.
+WITH first_day AS (
+    SELECT category, view_count, likes, comment_count, trending_date
+    FROM trending
+    QUALIFY row_number() OVER (PARTITION BY country, video_id ORDER BY trending_date) = 1
+)
 SELECT
     category,
     count(*) AS videos,
-    round(median(1000.0 * likes_at_peak / peak_views), 1) AS median_likes_per_1k_views,
-    round(median(1000.0 * comments_at_peak / peak_views), 2) AS median_comments_per_1k_views
-FROM trending_videos
-WHERE peak_views > 0
+    round(median(1000.0 * likes / view_count), 1) AS median_likes_per_1k_views,
+    round(median(1000.0 * comment_count / view_count), 2) AS median_comments_per_1k_views
+FROM first_day
+WHERE view_count > 0
+  AND trending_date > DATE '2020-08-12'
 GROUP BY category
 HAVING count(*) >= 500
 ORDER BY median_likes_per_1k_views DESC;
