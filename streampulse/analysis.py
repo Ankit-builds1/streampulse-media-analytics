@@ -115,6 +115,33 @@ def load_publish_slots(connection):
     """).df()
 
 
+def load_title_runs(connection):
+    """One row per completed trending run with its title, days on the list and the channel's typical run length."""
+    # channel_typical_days is the channel's average days on the list for its other trending videos in the
+    # same country, so a video's own run never leaks into its control.
+    return connection.execute(f"""
+        SELECT
+            country,
+            video_id,
+            channel_id,
+            category,
+            title,
+            days_trending,
+            year(first_trending_date) AS trending_year,
+            (sum(days_trending) OVER channel - days_trending) / nullif(count(*) OVER channel - 1, 0)
+                AS channel_typical_days,
+            CASE
+                WHEN country <> 'IN' THEN country
+                WHEN first_trending_date < DATE '{INDIA_LIST_CHANGE}' THEN 'IN before Oct 2022'
+                ELSE 'IN from Oct 2022'
+            END AS country_period
+        FROM trending_videos
+        WHERE first_trending_date > DATE '{DATA_START}'
+          AND last_trending_date < DATE '{DATA_END}'
+        WINDOW channel AS (PARTITION BY country, channel_id)
+    """).df()
+
+
 def median_with_ci(values, confidence=0.95):
     """Median with a distribution-free confidence interval taken from the order statistics."""
     sorted_values = np.sort(values.dropna().to_numpy())
