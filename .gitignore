@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Data and generated outputs (can be rebuilt from the raw downloads)
+data/raw/
+data/processed/
+*.duckdb
+*.duckdb.wal
+mlruns/
+mlartifacts/
+
+# Editor and OS files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
