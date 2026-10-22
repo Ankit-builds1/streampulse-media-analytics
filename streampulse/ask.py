@@ -22,6 +22,12 @@ SCHEMA_NOTES = """
 - netflix_titles: one row per Netflix title. type is 'Movie' or 'TV Show'. country and listed_in (genres)
   are comma-separated lists of full names, such as 'United States, India'. imdb_rating and imdb_votes are
   NULL for titles with no IMDb match. rating is the age rating, such as 'TV-MA', not a quality score.
+- view_count, likes and comment_count in trending are running totals on that day, so never sum them across days.
+  For any per-video measure, use trending_videos, which has one row per video and country.
+- Some channels changed their name during the period. Group channels by channel_id and show
+  any_value(channel_title) as the name.
+- When ranking groups by an average, median or ratio, only keep groups with at least 30 rows and include
+  the row count as a column, so small groups do not win by chance.
 - YouTube data runs from 2020-08-12 to 2024-04-15. The Netflix catalog runs to 2021-09-25.
 - India's YouTube data changes on 2022-10-06, so compare Indian engagement within one side of that date.
 - Dislike counts are not available. Use median for view counts, which are very skewed.
