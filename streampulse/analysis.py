@@ -142,6 +142,31 @@ def load_title_runs(connection):
     """).df()
 
 
+def gini(values):
+    """Gini coefficient of non-negative values: 0 when all are equal, close to 1 when one holds everything."""
+    sorted_values = np.sort(np.asarray(values, dtype=float))
+    n_values = len(sorted_values)
+    ranks = np.arange(1, n_values + 1)
+    return 2 * np.sum(ranks * sorted_values) / (n_values * sorted_values.sum()) - (n_values + 1) / n_values
+
+
+def lorenz_curve(values):
+    """Cumulative share of units and of the total, from the smallest unit to the largest, starting at (0, 0)."""
+    sorted_values = np.sort(np.asarray(values, dtype=float))
+    share_of_units = np.arange(len(sorted_values) + 1) / len(sorted_values)
+    share_of_total = np.concatenate([[0], np.cumsum(sorted_values) / sorted_values.sum()])
+    return share_of_units, share_of_total
+
+
+def bootstrap_ci(values, statistic, n_resamples=1000, confidence=0.95, seed=0):
+    """Percentile bootstrap confidence interval for a statistic of one sample."""
+    values = np.asarray(values)
+    generator = np.random.default_rng(seed)
+    resampled = [statistic(generator.choice(values, size=len(values))) for _ in range(n_resamples)]
+    tail = 100 * (1 - confidence) / 2
+    return np.percentile(resampled, [tail, 100 - tail])
+
+
 def median_with_ci(values, confidence=0.95):
     """Median with a distribution-free confidence interval taken from the order statistics."""
     sorted_values = np.sort(values.dropna().to_numpy())
