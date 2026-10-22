@@ -1,9 +1,13 @@
+import datetime
 import re
 import threading
 
 import duckdb
+import numpy as np
 import pandas as pd
+import plotly.express as px
 
+from streampulse.charts import COUNTRY_COLORS, SINGLE_SERIES_COLOR
 from streampulse.database import DATABASE_PATH
 from streampulse.llm import complete
 
@@ -45,6 +49,14 @@ Notes:
 {notes}
 
 Reply with only the SQL inside a ```sql code block."""
+
+
+ANSWER_PROMPT = """You explain the result of a database query to a business reader in 1 to 3 plain sentences.
+Use only numbers that appear in the result table, written the same way or rounded. Do not calculate new
+numbers, do not guess causes, and do not mention SQL. If the result is empty, say that no data matched.
+If the result says the question is not answerable, say so briefly."""
+MAX_ROWS_IN_ANSWER_PROMPT = 30
+NUMBER_PATTERN = re.compile(r"-?\d[\d,]*(?:\.\d+)?")
 
 
 def connect_for_questions():
@@ -129,3 +141,106 @@ def ask_data(question, connection=None):
             previous_attempt = (sql, str(query_error).splitlines()[0])
     return {"question": question, "sql": sql, "rows": None, "truncated": False,
             "attempts": MAX_ATTEMPTS, "error": previous_attempt[1]}
+
+
+def write_answer(question, rows):
+    """Ask the LLM to state the result in plain words, using only numbers from the result rows."""
+    table_text = rows.head(MAX_ROWS_IN_ANSWER_PROMPT).to_csv(index=False)
+    user_prompt = f"Question: {question}\n\nResult table ({len(rows)} rows, CSV):\n{table_text}"
+    return complete(ANSWER_PROMPT, user_prompt).strip()
+
+
+def unsupported_numbers(answer, rows, question=""):
+    """Numbers in the answer that do not match any value in the rows or the question, allowing for rounding."""
+    numeric_cells = rows.select_dtypes(include="number").to_numpy(dtype=float, na_value=np.nan).ravel()
+    known_values = list(numeric_cells[~np.isnan(numeric_cells)])
+    known_values += [float(number.replace(",", "")) for number in NUMBER_PATTERN.findall(question)]
+    # Dates and text cells can hold numbers too, such as the year in 2019-05-01.
+    for text_value in rows.astype(str).to_numpy().ravel():
+        known_values += [float(number.replace(",", "")) for number in NUMBER_PATTERN.findall(text_value)]
+
+    unsupported = []
+    for number_text in NUMBER_PATTERN.findall(answer):
+        number = float(number_text.replace(",", ""))
+        decimals = len(number_text.split(".")[1]) if "." in number_text else 0
+        rounding_tolerance = 0.5 * 10 ** -decimals
+        # A share can be written as a percentage, so 0.5186 in the table supports 51.86% in the answer.
+        matches = any(
+            abs(number - value) <= rounding_tolerance or abs(number - 100 * value) <= rounding_tolerance
+            or abs(number - value / 1e6) <= rounding_tolerance or abs(number - value / 1e3) <= rounding_tolerance
+            for value in known_values
+        )
+        if not matches:
+            unsupported.append(number_text)
+    return unsupported
+
+
+def _is_time_column(rows, column):
+    if pd.api.types.is_datetime64_any_dtype(rows[column]):
+        return True
+    first_value = rows[column].dropna().iloc[0] if rows[column].notna().any() else None
+    if isinstance(first_value, (datetime.date, datetime.datetime)):
+        return True
+    name = column.lower()
+    time_words = ("year", "month", "week", "date")
+    return (name in {*time_words, "day"} or name.endswith(tuple(f"_{word}" for word in time_words))
+            or name.startswith(tuple(f"{word}_" for word in time_words)))
+
+
+def _is_count_column(column):
+    name = column.lower()
+    return name in {"count", "n", "rows"} or name.endswith(("_count", "_rows")) or name.startswith(("count_", "number_of_"))
+
+
+def choose_chart(rows):
+    """Pick a chart for a result: a line over time, a bar per label, or None when a chart would not help."""
+    if rows is None or len(rows) < 2:
+        return None
+    time_columns = [column for column in rows.columns if _is_time_column(rows, column)]
+    value_columns = [column for column in rows.select_dtypes(include="number").columns if column not in time_columns]
+    label_columns = [column for column in rows.columns if column not in time_columns and column not in value_columns]
+    if not value_columns:
+        return None
+    # Queries often add a row count next to the measure that was asked for, and an id next to a name.
+    # Chart the measure and label with the name; fall back to the count or id when nothing else exists.
+    value_columns = sorted(value_columns, key=_is_count_column)
+    label_columns = sorted(label_columns, key=lambda column: column.lower().endswith("_id"))
+    # Countries keep their usual colors, so a result with a country column is split by country.
+    color_column = "country" if "country" in label_columns else None
+    if time_columns:
+        return {"kind": "line", "x": time_columns[0], "y": value_columns[0], "color": color_column}
+    if label_columns and len(rows) <= MAX_ROWS_IN_ANSWER_PROMPT:
+        label_column = next((column for column in label_columns if column != "country"), label_columns[0])
+        return {"kind": "bar", "x": value_columns[0], "y": label_column, "color": color_column}
+    return None
+
+
+def build_chart(rows, chart_choice):
+    """Plotly figure for a chart choice from choose_chart."""
+    color_column = chart_choice["color"]
+    color_settings = (
+        {"color": color_column, "color_discrete_map": COUNTRY_COLORS} if color_column
+        else {"color_discrete_sequence": [SINGLE_SERIES_COLOR]}
+    )
+    if chart_choice["kind"] == "line":
+        figure = px.line(rows.sort_values(chart_choice["x"]), x=chart_choice["x"], y=chart_choice["y"],
+                         markers=True, **color_settings)
+    else:
+        figure = px.bar(rows, x=chart_choice["x"], y=chart_choice["y"], orientation="h",
+                        barmode="group", **color_settings)
+        figure.update_yaxes(categoryorder="array", categoryarray=list(rows[chart_choice["y"]])[::-1])
+    figure.update_layout(template="plotly_white", margin={"l": 10, "r": 10, "t": 30, "b": 10})
+    return figure
+
+
+def answer_question(question, connection=None):
+    """Full Ask the Data flow: SQL, rows, a plain-English answer, unsupported numbers and a chart if one fits."""
+    result = ask_data(question, connection)
+    result.update({"answer": None, "unsupported_numbers": [], "chart": None})
+    if result["error"] is None:
+        result["answer"] = write_answer(question, result["rows"])
+        result["unsupported_numbers"] = unsupported_numbers(result["answer"], result["rows"], question)
+        chart_choice = choose_chart(result["rows"])
+        if chart_choice:
+            result["chart"] = build_chart(result["rows"], chart_choice)
+    return result
