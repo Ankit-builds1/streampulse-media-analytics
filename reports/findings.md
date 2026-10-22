@@ -186,3 +186,30 @@ shared videos.
 
 **Limitations.** Categories are broad and self-chosen. India's longer daily intake makes overlap shares
 asymmetric. "Which country is first" uses list dates and inherits the capture-timing issue from analysis 1.
+
+## 7. Channel concentration
+
+Notebook: `notebooks/09_channel_concentration.ipynb`
+
+**Question.** Is the trending list open to many creators, or do a few channels take most of the space?
+
+**Method.** Each video appearance on a day's list is one slot; a channel's share is its slot count. Lorenz curves
+and Gini coefficients per country with 95% bootstrap confidence intervals, yearly Gini for the full years 2021 to
+2023, and Gini within each category. Only channels that trended at least once are counted.
+
+**Finding.**
+
+- Gini is 0.67 to 0.69 in every country over the whole period: India 0.683 (95% CI 0.666 to 0.699), US 0.674
+  (0.664 to 0.684), UK 0.689 (0.676 to 0.703). The intervals overlap.
+- 7% to 9% of trending channels hold half of all list slots; the top 1% hold 15% to 18%; the bottom half hold
+  7% to 9%.
+- India's list is led by TV networks and Pakistani drama channels, the US by sports leagues and broadcasters and
+  MrBeast, the UK by football media and the Sidemen. India's top 10 channels hold 7.9% of slots against 5.3% (UK)
+  and 3.5% (US).
+- Within a single year India is the most concentrated (Gini 0.59 to 0.63 against 0.55 to 0.58), and US and UK
+  concentration barely moved from 2021 to 2023.
+- Sports is the most concentrated category in the US and UK (0.74); News & Politics is among the least (0.56 to
+  0.64).
+
+**Limitations.** Channels that never trended are not in the data, so concentration across all of YouTube is
+higher. Gini depends on the time window, so only equal windows are compared.
