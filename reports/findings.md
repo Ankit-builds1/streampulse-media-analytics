@@ -125,3 +125,34 @@ videos, standing in for audience size). Type II ANOVA F-tests with partial eta s
 **Limitations.** Only trending videos are included. Channel strength is a proxy from other trending videos, and
 4.5% of runs (single-video channels) are left out of the adjusted models. US local time uses Eastern time. The
 analysis is observational, so remaining effects can still come from unmeasured factors such as planned launches.
+
+## 5. Title features and trending duration
+
+Notebook: `notebooks/07_title_features.ipynb`
+
+**Question.** Among trending videos, do titles with numbers, questions, capital letters, emoji, hashtags or
+strong sentiment stay on the list longer?
+
+**Method.** Nine rule-based title features plus VADER sentiment (positive, neutral, negative; titles not mostly
+in Latin script are marked "not scored", 24.8% of Indian titles). Outcome: days on the list for 172,436 completed
+runs. Linear regression per country with HC1 robust standard errors, controlling for category, trending year,
+India's data period and the channel's typical run length on its other trending videos. A block F-test measures
+how much all title terms add together.
+
+**Finding.**
+
+- Titles alone explain 1.5% (US) to 3.7% (India) of the variation in days on the list. After controls, all title
+  terms together explain 0.13% to 0.39% of what is left, while the channel's typical run length explains 7% to 18%.
+- Raw gaps shrink after controls: US `#shorts` titles run 0.88 days shorter raw and 0.25 days adjusted.
+- No adjusted effect exceeds a quarter of a day. The largest is `#shorts`: 0.25 days shorter in the US but 0.22
+  days longer in India. Only question marks point the same way in all three countries (0.04 to 0.08 days
+  shorter), significant in India and the US only.
+- Sentiment has no consistent effect: positive and negative titles run slightly longer than neutral ones in the
+  US, negative titles run 0.15 days shorter in India, and the UK shows no clear effect.
+- With 33 coefficients tested, one or two pass p < 0.05 by chance, so single-country effects are weak evidence.
+- Business answer: common title advice does not keep a video trending. The Phase 4 title optimizer should be
+  framed around clarity and click appeal, not time on the list.
+
+**Limitations.** Only trending videos are included, so titles may still matter for whether a video trends at all.
+VADER misses non-Latin titles and most Hinglish. The features are simple rules ("caps word" also counts acronyms).
+Single-video channels are excluded from the controlled models.
