@@ -156,3 +156,33 @@ how much all title terms add together.
 **Limitations.** Only trending videos are included, so titles may still matter for whether a video trends at all.
 VADER misses non-Latin titles and most Hinglish. The features are simple rules ("caps word" also counts acronyms).
 Single-video channels are excluded from the controlled models.
+
+## 6. India vs US vs UK: category mix and overlap
+
+Notebook: `notebooks/08_country_comparison.ipynb`
+
+**Question.** Can the three markets be treated as one audience, or does each need its own content plan?
+
+**Method.** Chi-square test of independence on the country-by-category table of 173,596 video-country pairs,
+with Cramer's V and Pearson residuals. Overlap as shared videos and the Jaccard index, by pair and by quarter.
+Share of each category's videos that trend in more than one country. Day difference in first trending date for
+shared videos.
+
+**Finding.**
+
+- The category mix differs significantly (chi-squared 26,029, df 28, p < 0.001, Cramer's V 0.27). India differs
+  strongly from the US (V 0.37) and the UK (V 0.39); the US and UK differ little (V 0.12).
+- India over-indexes on Entertainment (42.9% of its trending videos against about 20%) and People & Blogs (16.2%
+  against about 9%). The US leans to Gaming (20.0%) and Music (15.6%), the UK to Sports (20.4%) and Gaming (16.5%).
+- The US and UK share 24,447 trending videos, 52% of each country's list (Jaccard 0.35 for videos, 0.47 for
+  channels), and that held in every quarter (0.32 to 0.37). India shares 2.2% of its videos with the US and 2.5%
+  with the UK.
+- Gaming (38% of its videos trend in more than one country), Film & Animation (31%) and Science & Technology (26%)
+  travel best; News & Politics (9%), People & Blogs (10%) and Entertainment (11%) stay local. What crosses into
+  India is global gaming, K-pop, global creators and brand launches (Clash of Clans, BTS, MrBeast, Marvel, Apple).
+- Neither the US nor the UK leads: shared videos start trending on the same day 74% of the time. India's list picks
+  up shared videos first in about 25% of cases against 8% the other way.
+- Business answer: one plan can serve the US and UK; India needs its own, built on local entertainment and creators.
+
+**Limitations.** Categories are broad and self-chosen. India's longer daily intake makes overlap shares
+asymmetric. "Which country is first" uses list dates and inherits the capture-timing issue from analysis 1.
