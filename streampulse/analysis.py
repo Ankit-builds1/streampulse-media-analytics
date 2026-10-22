@@ -1,8 +1,12 @@
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 DATA_START = "2020-08-12"
 DATA_END = "2024-04-15"
+# On this day India's daily list stopped holding a steady 200 videos and likes per view dropped from about
+# 60 to about 42 per 1,000 views in every category. The cause is not in the data, so India is split in two.
+INDIA_LIST_CHANGE = "2022-10-06"
 
 
 def load_time_to_trend(connection):
@@ -38,13 +42,71 @@ def load_trending_durations(connection):
     """).df()
 
 
-def odds_ratios(fitted_model, term_contains):
-    """Odds ratios with 95% confidence intervals for the model terms whose name contains the given text."""
+def load_first_day_engagement(connection):
+    """One row per video and country with views, likes and comments on its first trending day."""
+    # Likes and comments per view fall as a video ages, and videos stay on the list longer in some
+    # countries than others, so every video is measured at the same point in its life.
+    return connection.execute(f"""
+        WITH first_day AS (
+            SELECT
+                country,
+                video_id,
+                category,
+                trending_date AS first_trending_date,
+                view_count AS views,
+                likes,
+                comment_count AS comments
+            FROM trending
+            QUALIFY row_number() OVER (PARTITION BY country, video_id ORDER BY trending_date) = 1
+        )
+        SELECT
+            *,
+            1000.0 * likes / views AS likes_per_1k_views,
+            1000.0 * comments / views AS comments_per_1k_views,
+            CASE
+                WHEN country <> 'IN' THEN country
+                WHEN first_trending_date < DATE '{INDIA_LIST_CHANGE}' THEN 'IN before Oct 2022'
+                ELSE 'IN from Oct 2022'
+            END AS country_period
+        FROM first_day
+        WHERE first_trending_date > DATE '{DATA_START}'
+          AND views > 0
+    """).df()
+
+
+def median_with_ci(values, confidence=0.95):
+    """Median with a distribution-free confidence interval taken from the order statistics."""
+    sorted_values = np.sort(values.dropna().to_numpy())
+    n_values = len(sorted_values)
+    z_score = stats.norm.ppf(0.5 + confidence / 2)
+    lower_rank = max(int(np.floor(n_values / 2 - z_score * np.sqrt(n_values) / 2)), 0)
+    upper_rank = min(int(np.ceil(n_values / 2 + z_score * np.sqrt(n_values) / 2)), n_values - 1)
+    return pd.Series({
+        "videos": n_values,
+        "median": np.median(sorted_values),
+        "ci_low": sorted_values[lower_rank],
+        "ci_high": sorted_values[upper_rank],
+    })
+
+
+def _exponentiated_terms(fitted_model, term_contains):
     params = fitted_model.params[fitted_model.params.index.str.contains(term_contains, regex=False)]
     conf_int = fitted_model.conf_int().loc[params.index]
+    return np.exp(params), np.exp(conf_int[0]), np.exp(conf_int[1]), fitted_model.pvalues.loc[params.index]
+
+
+def odds_ratios(fitted_model, term_contains):
+    """Odds ratios with 95% confidence intervals for the model terms whose name contains the given text."""
+    ratio, ci_low, ci_high, p_value = _exponentiated_terms(fitted_model, term_contains)
+    return pd.DataFrame({"odds_ratio": ratio, "ci_low": ci_low, "ci_high": ci_high, "p_value": p_value})
+
+
+def percent_differences(fitted_model, term_contains):
+    """For a model of log(outcome), the percent difference in the outcome for each matching term, with 95% CI."""
+    ratio, ci_low, ci_high, p_value = _exponentiated_terms(fitted_model, term_contains)
     return pd.DataFrame({
-        "odds_ratio": np.exp(params),
-        "ci_low": np.exp(conf_int[0]),
-        "ci_high": np.exp(conf_int[1]),
-        "p_value": fitted_model.pvalues.loc[params.index],
+        "pct_difference": 100 * (ratio - 1),
+        "ci_low": 100 * (ci_low - 1),
+        "ci_high": 100 * (ci_high - 1),
+        "p_value": p_value,
     })
