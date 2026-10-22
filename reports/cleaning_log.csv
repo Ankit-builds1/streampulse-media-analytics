@@ -1,0 +1,8 @@
+rule,rows_changed
+drop same-day repeats,11029
+view_count 0 to missing (hidden counter),190
+fill missing channel_title,1
+likes to missing (ratings disabled),5274
+comment_count to missing (comments disabled),9888
+tags [None] to empty,130680
+drop dislikes column,777826
