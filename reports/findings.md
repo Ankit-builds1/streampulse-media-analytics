@@ -241,3 +241,33 @@ views. Rolling-origin evaluation over 10 windows of 30 days, the last being the 
 
 **Limitations.** The series covers views gained while on the trending list only. Interpolated days are smoothed.
 MAPE is unstable for small actual values. Only one series and one horizon were tested.
+
+## 9. Netflix catalog growth and IMDb ratings
+
+Notebook: `notebooks/11_netflix_catalog.ipynb`
+
+**Question.** Between 2016 and 2021, which countries and genres drove Netflix's catalog growth, and did the titles
+it added get better or worse on IMDb?
+
+**Method.** Shares of additions by main production country and by genre over time for 8,654 titles added 2016 to
+2021. IMDb ratings for 5,003 matched titles with at least 1,000 votes, with bootstrap intervals for yearly medians
+and a linear regression of rating on year added, controlling for type, log votes and recent release, then also
+for genre (25 genre indicators). HC1 robust standard errors.
+
+**Finding.**
+
+- Titles added rose from 429 (2016) to 2,015 (2019), then 1,879 (2020) and 1,494 in the first nine months of 2021.
+- India's share of additions went from 2.6% (2016) to 20.6% (2018), then fell to 6.7% (2021). The US share stayed
+  between 30% and 42%.
+- The mix moved toward mainstream genres: documentaries fell from 7.9% to 2.9% of genre labels between 2016-2017
+  and 2020-2021, while comedies, dramas, romantic movies, action and reality TV grew. Recent releases fell from
+  66% to 51% of additions.
+- Titles added in 2021 rate 0.44 points lower than 2016 additions (95% CI -0.59 to -0.29). With genre controls the
+  gap is 0.28 points (-0.40 to -0.16), so the genre shift explains about a third; only 2020 and 2021 are clearly
+  below 2016.
+- TV shows rate 0.6 to 1.3 points higher than movies each year. Indian movies rate above US movies (median 6.7 vs
+  6.4); Indian TV shows rate lower than most countries' TV (6.9).
+- Business answer: growth brought a broader, more mainstream mix and a modest, real drop in average rating.
+
+**Limitations.** The catalog is a September 2021 snapshot, so titles removed earlier are missing. Ratings are from
+2026 and cover matched titles with at least 1,000 votes. Main country is the first listed production country.
