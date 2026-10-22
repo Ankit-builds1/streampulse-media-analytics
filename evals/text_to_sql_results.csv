@@ -1,0 +1,511 @@
+run,id,difficulty,question,passed,attempts,seconds,error,model_sql
+1,1,easy,How many unique videos trended in India?,True,1,1.92,,"SELECT COUNT(*) AS unique_videos_trended_in_india
+FROM trending_videos
+WHERE country = 'IN'"
+1,2,easy,How many Netflix titles are TV shows?,True,1,0.98,,"SELECT COUNT(*) AS tv_show_count
+FROM netflix_titles
+WHERE type = 'TV Show'"
+1,3,easy,What is the last date in the YouTube trending data?,True,1,1.37,,"SELECT MAX(trending_date) AS last_date
+FROM trending"
+1,4,easy,How many different channels appeared on the US trending list?,True,1,0.71,,"SELECT COUNT(DISTINCT channel_id) AS channel_count
+FROM trending
+WHERE country = 'US'"
+1,5,easy,Which country has the most unique trending videos?,True,1,0.71,,"SELECT
+    country,
+    COUNT(DISTINCT video_id) AS unique_trending_videos
+FROM trending_videos
+GROUP BY country
+ORDER BY unique_trending_videos DESC
+LIMIT 1"
+1,6,easy,How many Netflix titles were added in 2020?,True,1,1.1,,"SELECT 
+    COUNT(*) AS titles_added_2020
+FROM 
+    netflix_titles
+WHERE 
+    EXTRACT(year FROM date_added) = 2020"
+1,7,medium,What is the median number of days a video stays on the trending list in each country?,True,1,1.73,,"SELECT
+    country,
+    ROUND(MEDIAN(days_trending)::NUMERIC, 2) AS median_days_trending,
+    COUNT(*) AS video_count
+FROM trending_videos
+GROUP BY country
+HAVING COUNT(*) >= 30
+ORDER BY country"
+1,8,medium,What are the top 5 categories by number of unique trending videos in the US?,True,1,1.03,,"SELECT
+    category,
+    COUNT(DISTINCT video_id) AS unique_videos
+FROM trending_videos
+WHERE country = 'US'
+GROUP BY category
+ORDER BY unique_videos DESC
+LIMIT 5"
+1,9,medium,"Which 5 channels spent the most days on the India trending list, and how many days each?",True,1,1.2,,"SELECT 
+    ANY_VALUE(tv.channel_title) AS channel_name,
+    tv.channel_id,
+    SUM(tv.days_trending)      AS total_days
+FROM trending_videos AS tv
+WHERE tv.country = 'IN'
+GROUP BY tv.channel_id
+ORDER BY total_days DESC
+LIMIT 5"
+1,10,medium,How many Netflix titles were added in each year from 2015 to 2021?,True,1,0.89,,"SELECT
+    EXTRACT(year FROM date_added) AS year_added,
+    COUNT(*) AS titles_added
+FROM netflix_titles
+WHERE date_added IS NOT NULL
+  AND EXTRACT(year FROM date_added) BETWEEN 2015 AND 2021
+GROUP BY year_added
+ORDER BY year_added"
+1,11,medium,"What is the average IMDb rating of Netflix movies and of Netflix TV shows, counting only titles with at least 1,000 IMDb votes?",True,1,2.46,,"SELECT
+    type AS title_type,
+    ROUND(AVG(imdb_rating), 2) AS avg_imdb_rating,
+    COUNT(*) AS title_count
+FROM netflix_titles
+WHERE imdb_votes >= 1000
+  AND imdb_rating IS NOT NULL
+GROUP BY type"
+1,12,medium,What percentage of the US's unique trending videos also trended in the UK?,True,1,2.48,,"WITH us_videos AS (
+    SELECT DISTINCT video_id
+    FROM trending_videos
+    WHERE country = 'US'
+),
+uk_videos AS (
+    SELECT DISTINCT video_id
+    FROM trending_videos
+    WHERE country = 'GB'
+),
+common_videos AS (
+    SELECT video_id
+    FROM us_videos
+    INTERSECT
+    SELECT video_id
+    FROM uk_videos
+)
+SELECT
+    ROUND(
+        100.0 * COUNT(common_videos.video_id) / NULLIF(COUNT(us_videos.video_id), 0),
+        2
+    ) AS us_videos_also_in_uk_pct
+FROM us_videos
+LEFT JOIN common_videos USING (video_id)"
+1,13,medium,"Which production country appears on the most Netflix titles, counting every country listed on a title?",True,1,2.08,,"WITH exploded AS (
+    SELECT
+        show_id,
+        TRIM(country_part) AS production_country
+    FROM netflix_titles,
+    UNNEST(SPLIT(country, ',')) AS country_part
+    WHERE country IS NOT NULL AND country <> ''
+)
+SELECT
+    production_country,
+    COUNT(DISTINCT show_id) AS title_count
+FROM exploded
+GROUP BY production_country
+ORDER BY title_count DESC
+LIMIT 1"
+1,14,medium,"In each country, what percentage of trending videos had comments disabled?",True,1,1.32,,"SELECT
+    country,
+    COUNT(*) AS video_count,
+    SUM(CASE WHEN comments_disabled THEN 1 ELSE 0 END) AS comments_disabled_count,
+    ROUND(100.0 * SUM(CASE WHEN comments_disabled THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_comments_disabled
+FROM trending_videos
+WHERE country IN ('IN', 'US', 'GB')
+GROUP BY country
+HAVING COUNT(*) >= 30
+ORDER BY country"
+1,15,hard,"For each country, what percentage of unique trending videos stayed on the list for only one day?",True,1,0.99,,"SELECT
+    country,
+    ROUND(100.0 * SUM(CASE WHEN days_trending = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_one_day_videos,
+    COUNT(*) AS total_unique_videos
+FROM trending_videos
+GROUP BY country
+ORDER BY country"
+1,16,hard,In which calendar month (year and month) did the most new videos enter India's trending list?,True,1,1.33,,"WITH first_trending AS (
+    SELECT
+        video_id,
+        MIN(trending_date) AS first_date
+    FROM trending
+    WHERE country = 'IN'
+    GROUP BY video_id
+)
+SELECT
+    EXTRACT(YEAR FROM first_date) AS year,
+    EXTRACT(MONTH FROM first_date) AS month,
+    COUNT(*) AS new_videos
+FROM first_trending
+GROUP BY year, month
+ORDER BY new_videos DESC
+LIMIT 1"
+1,17,hard,"Among Netflix titles with at least 1,000 IMDb votes, which genre has the highest median IMDb rating, considering only genres with at least 50 such titles?",True,2,4.28,,"WITH genre_titles AS (
+    SELECT
+        TRIM(g.genre) AS genre,
+        nt.imdb_rating
+    FROM netflix_titles AS nt
+    CROSS JOIN UNNEST(string_split(nt.listed_in, ',')) AS g(genre)
+    WHERE nt.imdb_votes >= 1000
+      AND nt.imdb_rating IS NOT NULL
+)
+SELECT
+    genre,
+    ROUND(MEDIAN(imdb_rating), 2) AS median_imdb_rating,
+    COUNT(*) AS title_count
+FROM genre_titles
+GROUP BY genre
+HAVING COUNT(*) >= 50
+ORDER BY median_imdb_rating DESC
+LIMIT 1"
+1,18,hard,"On average, how many days after upload did US Music videos first appear on the trending list?",True,1,3.97,,"SELECT
+    ROUND(AVG(days_after_upload), 2) AS avg_days_after_upload,
+    COUNT(*) AS video_count
+FROM (
+    SELECT
+        DATE_DIFF('day', CAST(published_at AS DATE), first_trending_date) AS days_after_upload
+    FROM trending_videos
+    WHERE country = 'US'
+      AND category = 'Music'
+      AND first_trending_date IS NOT NULL
+) sub"
+1,19,trick,Which video had the most dislikes in 2023?,True,1,4.25,,SELECT 'not answerable from this data' AS answer
+1,20,trick,Remove all Netflix titles added before 2015 from the database.,True,1,0.66,,SELECT 'not answerable from this data' AS answer
+2,1,easy,How many unique videos trended in India?,True,1,0.96,,"SELECT 
+    COUNT(DISTINCT video_id) AS unique_videos_trended_in_india
+FROM 
+    trending_videos
+WHERE 
+    country = 'IN'"
+2,2,easy,How many Netflix titles are TV shows?,True,1,1.23,,"SELECT COUNT(*) AS tv_show_count
+FROM netflix_titles
+WHERE type = 'TV Show'"
+2,3,easy,What is the last date in the YouTube trending data?,True,1,0.95,,"SELECT 
+    MAX(trending_date) AS last_date
+FROM 
+    trending"
+2,4,easy,How many different channels appeared on the US trending list?,True,1,0.75,,"SELECT COUNT(DISTINCT channel_id) AS channel_count
+FROM trending
+WHERE country = 'US'"
+2,5,easy,Which country has the most unique trending videos?,True,1,0.71,,"SELECT
+    country,
+    COUNT(DISTINCT video_id) AS unique_trending_videos
+FROM trending_videos
+GROUP BY country
+ORDER BY unique_trending_videos DESC
+LIMIT 1"
+2,6,easy,How many Netflix titles were added in 2020?,True,1,1.0,,"SELECT 
+    COUNT(*) AS titles_added_2020
+FROM 
+    netflix_titles
+WHERE 
+    EXTRACT(year FROM date_added) = 2020"
+2,7,medium,What is the median number of days a video stays on the trending list in each country?,True,1,1.24,,"SELECT
+    country,
+    ROUND(MEDIAN(days_trending), 2) AS median_days_trending,
+    COUNT(*) AS video_count
+FROM trending_videos
+GROUP BY country
+HAVING COUNT(*) >= 30"
+2,8,medium,What are the top 5 categories by number of unique trending videos in the US?,True,1,2.64,,"SELECT
+    category AS category_name,
+    COUNT(DISTINCT video_id) AS unique_trending_videos
+FROM trending_videos
+WHERE country = 'US'
+GROUP BY category
+ORDER BY unique_trending_videos DESC
+LIMIT 5"
+2,9,medium,"Which 5 channels spent the most days on the India trending list, and how many days each?",True,1,1.4,,"SELECT 
+    ANY_VALUE(channel_title) AS channel_name,
+    SUM(days_trending)       AS total_days,
+    COUNT(*)                 AS video_count
+FROM trending_videos
+WHERE country = 'IN'
+GROUP BY channel_id
+ORDER BY total_days DESC
+LIMIT 5"
+2,10,medium,How many Netflix titles were added in each year from 2015 to 2021?,True,1,8.24,,"SELECT
+    EXTRACT(YEAR FROM date_added) AS year_added,
+    COUNT(*) AS titles_added
+FROM netflix_titles
+WHERE date_added IS NOT NULL
+  AND EXTRACT(YEAR FROM date_added) BETWEEN 2015 AND 2021
+GROUP BY EXTRACT(YEAR FROM date_added)
+ORDER BY year_added"
+2,11,medium,"What is the average IMDb rating of Netflix movies and of Netflix TV shows, counting only titles with at least 1,000 IMDb votes?",True,1,2.76,,"SELECT
+    type,
+    ROUND(AVG(imdb_rating), 2) AS avg_imdb_rating,
+    COUNT(*) AS title_count
+FROM netflix_titles
+WHERE imdb_rating IS NOT NULL
+  AND imdb_votes >= 1000
+GROUP BY type"
+2,12,medium,What percentage of the US's unique trending videos also trended in the UK?,True,1,1.34,,"WITH us_videos AS (
+    SELECT DISTINCT video_id
+    FROM trending_videos
+    WHERE country = 'US'
+),
+us_and_uk_videos AS (
+    SELECT v.video_id
+    FROM us_videos v
+    JOIN trending_videos tv
+          ON tv.video_id = v.video_id
+         AND tv.country = 'GB'
+)
+SELECT 
+    ROUND( (COUNT(*)::DOUBLE / (SELECT COUNT(*) FROM us_videos) ) * 100, 2) 
+        AS us_to_uk_trending_percentage,
+    (SELECT COUNT(*) FROM us_videos) AS us_unique_videos,
+    COUNT(*) AS us_and_uk_videos
+FROM us_and_uk_videos"
+2,13,medium,"Which production country appears on the most Netflix titles, counting every country listed on a title?",True,1,1.29,,"WITH exploded AS (
+    SELECT
+        TRIM(country_part) AS production_country,
+        show_id
+    FROM netflix_titles,
+    UNNEST(SPLIT(country, ',')) AS country_part
+)
+SELECT
+    production_country,
+    COUNT(DISTINCT show_id) AS title_count
+FROM exploded
+GROUP BY production_country
+ORDER BY title_count DESC
+LIMIT 1"
+2,14,medium,"In each country, what percentage of trending videos had comments disabled?",True,1,2.55,,"SELECT
+    country,
+    ROUND(100.0 * SUM(CASE WHEN comments_disabled THEN 1 ELSE 0 END) / COUNT(*), 2) AS percent_comments_disabled,
+    COUNT(*) AS video_count
+FROM trending_videos
+GROUP BY country
+ORDER BY country"
+2,15,hard,"For each country, what percentage of unique trending videos stayed on the list for only one day?",True,1,2.56,,"SELECT
+    country,
+    ROUND(100.0 * SUM(CASE WHEN days_trending = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS one_day_percentage
+FROM trending_videos
+GROUP BY country
+ORDER BY country"
+2,16,hard,In which calendar month (year and month) did the most new videos enter India's trending list?,True,2,10.31,,"SELECT
+    STRFTIME(first_trending_date, '%Y-%m') AS year_month,
+    COUNT(*) AS new_videos_count
+FROM trending_videos
+WHERE country = 'IN'
+GROUP BY year_month
+ORDER BY new_videos_count DESC
+LIMIT 1"
+2,17,hard,"Among Netflix titles with at least 1,000 IMDb votes, which genre has the highest median IMDb rating, considering only genres with at least 50 such titles?",False,2,10.64,,"WITH filtered AS (
+    SELECT
+        t.imdb_rating,
+        t.imdb_votes,
+        TRIM(g) AS genre
+    FROM netflix_titles AS t
+    LEFT JOIN UNNEST(regexp_split_to_array(t.listed_in, ',\\s*')) AS g ON TRUE
+    WHERE t.imdb_votes >= 1000
+      AND t.imdb_rating IS NOT NULL
+),
+genre_stats AS (
+    SELECT
+        genre,
+        COUNT(*) AS title_count,
+        median(imdb_rating) AS median_rating
+    FROM filtered
+    GROUP BY genre
+    HAVING COUNT(*) >= 50
+)
+SELECT
+    genre,
+    ROUND(median_rating, 2) AS median_imdb_rating,
+    title_count
+FROM genre_stats
+ORDER BY median_rating DESC
+LIMIT 1"
+2,18,hard,"On average, how many days after upload did US Music videos first appear on the trending list?",False,1,4.95,,"WITH us_music AS (
+    SELECT
+        tv.video_id,
+        DATE(tv.first_trending_date)      AS first_trend_date,
+        DATE(t.published_at)              AS upload_date
+    FROM trending_videos tv
+    JOIN trending t
+        ON tv.video_id = t.video_id
+       AND tv.country  = t.country
+    WHERE tv.country = 'US'
+      AND tv.category = 'Music'
+      AND t.category = 'Music'
+)
+SELECT
+    ROUND(AVG(DATEDIFF('day', upload_date, first_trend_date))::NUMERIC, 2) AS avg_days_after_upload,
+    COUNT(*)                                                               AS video_count
+FROM us_music
+WHERE DATEDIFF('day', upload_date, first_trend_date) >= 0"
+2,19,trick,Which video had the most dislikes in 2023?,True,1,1.76,,SELECT 'not answerable from this data' AS answer
+2,20,trick,Remove all Netflix titles added before 2015 from the database.,True,1,5.38,,SELECT 'not answerable from this data' AS answer
+3,1,easy,How many unique videos trended in India?,True,1,0.88,,"SELECT 
+    COUNT(DISTINCT video_id) AS unique_videos_trended_in_india
+FROM 
+    trending_videos
+WHERE 
+    country = 'IN'"
+3,2,easy,How many Netflix titles are TV shows?,True,1,2.64,,"SELECT COUNT(*) AS tv_show_count
+FROM netflix_titles
+WHERE type = 'TV Show'"
+3,3,easy,What is the last date in the YouTube trending data?,True,1,1.72,,"SELECT 
+    MAX(trend_date) AS last_date
+FROM (
+    SELECT trending_date AS trend_date
+    FROM trending
+    UNION ALL
+    SELECT last_trending_date AS trend_date
+    FROM trending_videos
+) AS all_dates"
+3,4,easy,How many different channels appeared on the US trending list?,True,1,0.75,,"SELECT COUNT(DISTINCT channel_id) AS channel_count
+FROM trending
+WHERE country = 'US'"
+3,5,easy,Which country has the most unique trending videos?,True,1,0.57,,"SELECT
+    country,
+    COUNT(DISTINCT video_id) AS unique_trending_videos
+FROM trending_videos
+GROUP BY country
+ORDER BY unique_trending_videos DESC
+LIMIT 1"
+3,6,easy,How many Netflix titles were added in 2020?,True,1,4.14,,"SELECT COUNT(*) AS titles_added_2020
+FROM netflix_titles
+WHERE EXTRACT(year FROM date_added) = 2020"
+3,7,medium,What is the median number of days a video stays on the trending list in each country?,True,1,0.86,,"SELECT
+    country,
+    ROUND(MEDIAN(days_trending)::NUMERIC, 2) AS median_days_trending,
+    COUNT(*) AS video_count
+FROM trending_videos
+GROUP BY country
+HAVING COUNT(*) >= 30
+ORDER BY country"
+3,8,medium,What are the top 5 categories by number of unique trending videos in the US?,True,1,0.83,,"SELECT
+    category AS category,
+    COUNT(DISTINCT video_id) AS unique_video_count
+FROM trending_videos
+WHERE country = 'US'
+GROUP BY category
+ORDER BY unique_video_count DESC
+LIMIT 5"
+3,9,medium,"Which 5 channels spent the most days on the India trending list, and how many days each?",True,1,1.5,,"SELECT 
+    ANY_VALUE(channel_title) AS channel_name,
+    channel_id,
+    SUM(days_trending)      AS total_days
+FROM trending_videos
+WHERE country = 'IN'
+GROUP BY channel_id
+ORDER BY total_days DESC
+LIMIT 5"
+3,10,medium,How many Netflix titles were added in each year from 2015 to 2021?,True,1,0.8,,"SELECT
+    DATE_PART('year', date_added) AS year_added,
+    COUNT(*) AS title_count
+FROM netflix_titles
+WHERE date_added IS NOT NULL
+  AND DATE_PART('year', date_added) BETWEEN 2015 AND 2021
+GROUP BY DATE_PART('year', date_added)
+ORDER BY year_added"
+3,11,medium,"What is the average IMDb rating of Netflix movies and of Netflix TV shows, counting only titles with at least 1,000 IMDb votes?",True,1,1.25,,"SELECT
+    type AS content_type,
+    ROUND(AVG(imdb_rating), 2) AS avg_imdb_rating,
+    COUNT(*) AS title_count
+FROM netflix_titles
+WHERE imdb_votes >= 1000
+  AND imdb_rating IS NOT NULL
+GROUP BY type
+ORDER BY content_type"
+3,12,medium,What percentage of the US's unique trending videos also trended in the UK?,True,1,7.11,,"WITH us_videos AS (
+    SELECT DISTINCT video_id
+    FROM trending_videos
+    WHERE country = 'US'
+),
+uk_videos AS (
+    SELECT DISTINCT video_id
+    FROM trending_videos
+    WHERE country = 'GB'
+)
+SELECT
+    ROUND(100.0 * COUNT(*) / NULLIF((SELECT COUNT(*) FROM us_videos), 0), 2) AS pct_us_trended_in_uk
+FROM us_videos
+WHERE video_id IN (SELECT video_id FROM uk_videos)"
+3,13,medium,"Which production country appears on the most Netflix titles, counting every country listed on a title?",True,1,4.81,,"WITH exploded AS (
+    SELECT
+        show_id,
+        TRIM(country_part) AS production_country
+    FROM netflix_titles,
+    UNNEST(SPLIT(country, ',')) AS country_part
+    WHERE country IS NOT NULL AND country <> ''
+)
+SELECT
+    production_country,
+    COUNT(DISTINCT show_id) AS title_count
+FROM exploded
+GROUP BY production_country
+ORDER BY title_count DESC
+LIMIT 1"
+3,14,medium,"In each country, what percentage of trending videos had comments disabled?",True,1,2.45,,"SELECT
+    country,
+    ROUND(100.0 * SUM(CASE WHEN comments_disabled THEN 1 ELSE 0 END) / COUNT(*), 2) AS pct_comments_disabled,
+    COUNT(*) AS video_count
+FROM trending_videos
+GROUP BY country
+ORDER BY country"
+3,15,hard,"For each country, what percentage of unique trending videos stayed on the list for only one day?",True,1,2.23,,"SELECT
+    country,
+    ROUND(100.0 * SUM(CASE WHEN days_trending = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS one_day_percentage
+FROM trending_videos
+GROUP BY country
+ORDER BY country"
+3,16,hard,In which calendar month (year and month) did the most new videos enter India's trending list?,True,1,1.53,,"WITH first_trending AS (
+    SELECT
+        video_id,
+        MIN(trending_date) AS first_date
+    FROM trending
+    WHERE country = 'IN'
+    GROUP BY video_id
+)
+SELECT
+    EXTRACT(year FROM first_date)   AS year,
+    EXTRACT(month FROM first_date)  AS month,
+    COUNT(*)                        AS new_videos
+FROM first_trending
+GROUP BY year, month
+ORDER BY new_videos DESC
+LIMIT 1"
+3,17,hard,"Among Netflix titles with at least 1,000 IMDb votes, which genre has the highest median IMDb rating, considering only genres with at least 50 such titles?",True,1,4.88,,"WITH genre_titles AS (
+    SELECT
+        nt.title,
+        nt.imdb_rating,
+        nt.imdb_votes,
+        TRIM(g) AS genre
+    FROM netflix_titles AS nt,
+    UNNEST(string_split(nt.listed_in, ',')) AS g
+    WHERE nt.imdb_votes >= 1000
+      AND nt.imdb_rating IS NOT NULL
+),
+genre_stats AS (
+    SELECT
+        genre,
+        COUNT(*) AS title_count,
+        ROUND(MEDIAN(imdb_rating), 2) AS median_imdb_rating
+    FROM genre_titles
+    GROUP BY genre
+    HAVING COUNT(*) >= 50
+)
+SELECT
+    genre,
+    median_imdb_rating,
+    title_count
+FROM genre_stats
+ORDER BY median_imdb_rating DESC
+LIMIT 1"
+3,18,hard,"On average, how many days after upload did US Music videos first appear on the trending list?",True,1,2.78,,"WITH us_music AS (
+    SELECT
+        video_id,
+        DATE(published_at) AS upload_date,
+        first_trending_date
+    FROM trending_videos
+    WHERE country = 'US'
+      AND category = 'Music'
+      AND first_trending_date IS NOT NULL
+)
+SELECT
+    ROUND(AVG(date_diff('day', upload_date, first_trending_date))::NUMERIC, 2) AS avg_days_to_trend,
+    COUNT(*) AS video_count
+FROM us_music"
+3,19,trick,Which video had the most dislikes in 2023?,True,1,1.73,,SELECT 'not answerable from this data' AS answer
+3,20,trick,Remove all Netflix titles added before 2015 from the database.,True,1,1.02,,SELECT 'not answerable from this data' AS answer
