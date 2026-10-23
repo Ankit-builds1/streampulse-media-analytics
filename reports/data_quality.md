@@ -53,11 +53,12 @@ appears six times.
 - **India's list is often shorter than 200 videos a day**, while US and GB are almost always 200.
   India also has the most unique videos (78,847 vs about 47,000). This looks like faster turnover,
   which is a question for the analysis, not a cleaning problem.
-- **India's data has a break on 2022-10-06.** Found during the engagement analysis. That day India's list
-  stopped holding a steady 200 videos, and median likes per 1,000 views dropped from about 60 to about 42
-  in every category. Time to trend and time on the list did not change. The cause (a change in how YouTube
-  built the list, or in how the dataset collected it) is not in the data, so engagement analyses treat India
-  as two periods.
+- **India's data has a break on 2022-10-06: YouTube Shorts left the trending list.** Found during the
+  engagement analysis, explained during topic discovery. On 5 October 2022, 79 of India's 200 trending videos
+  were Shorts (titles tagged #shorts); from 6 October there were none, the list stopped holding a steady 200
+  videos, and median likes per 1,000 views dropped from about 60 to about 42. Shorts left the US and UK lists
+  earlier, around April 2022. Time to trend and time on the list in India did not change. Engagement analyses
+  treat India as two periods.
 - **Encoding.** A check for broken characters flagged 13 rows, but on inspection all were correct
   text (for example SÃO PAULO). No fix needed.
 

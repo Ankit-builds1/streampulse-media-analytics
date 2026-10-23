@@ -4,8 +4,8 @@ from scipy import stats
 
 DATA_START = "2020-08-12"
 DATA_END = "2024-04-15"
-# On this day India's daily list stopped holding a steady 200 videos and likes per view dropped from about
-# 60 to about 42 per 1,000 views in every category. The cause is not in the data, so India is split in two.
+# On this day YouTube Shorts left India's trending list: 79 of the 200 videos on 5 October were Shorts, none
+# on 6 October. Shorts got more likes per view, so India's engagement levels before and after are split in two.
 INDIA_LIST_CHANGE = "2022-10-06"
 
 

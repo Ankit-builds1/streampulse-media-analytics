@@ -90,11 +90,15 @@ linear regression on the log scale with category, country-period and log(views),
   views but only 4% fewer likes.
 - India's data has a break on 2022-10-06: the daily list stopped holding 200 videos and likes per view dropped from
   about 60 to about 42 per 1,000 that day, in every category. Before the break Indian likes per view matched the US
-  (+2.9%); after it they are 29.5% lower. The cause is not in the data.
+  (+2.9%); after it they are 29.5% lower.
+- The cause, found later during topic discovery: YouTube Shorts left India's trending list that day. On 5 October
+  2022, 79 of the 200 videos on the list were Shorts; on 6 October, none were. Shorts had a median of 72 likes per
+  1,000 views against 53 for other videos (Jul to early Oct 2022). Shorts left the US and UK lists earlier, around
+  April 2022, when they made up a much smaller share.
 
-**Limitations.** The cause of the India break is unknown, so Indian engagement from different periods should not
-be compared directly. Only trending videos are included. Likes and comments can be inflated by bots or giveaways.
-The regression's category effects are averages over countries.
+**Limitations.** Indian engagement before and after 6 October 2022 should not be compared directly, because the list
+held a different mix of formats. Only trending videos are included. Likes and comments can be inflated by bots or
+giveaways. The regression's category effects are averages over countries.
 
 ## 4. Best time to publish
 
@@ -146,7 +150,8 @@ how much all title terms add together.
 - Raw gaps shrink after controls: US `#shorts` titles run 0.88 days shorter raw and 0.25 days adjusted.
 - No adjusted effect exceeds a quarter of a day. The largest is `#shorts`: 0.25 days shorter in the US but 0.22
   days longer in India. Only question marks point the same way in all three countries (0.04 to 0.08 days
-  shorter), significant in India and the US only.
+  shorter), significant in India and the US only. Note that Shorts were on the US and UK lists only until about
+  April 2022 and on India's until October 2022, so the `#shorts` comparison mixes format with period.
 - Sentiment has no consistent effect: positive and negative titles run slightly longer than neutral ones in the
   US, negative titles run 0.15 days shorter in India, and the UK shows no clear effect.
 - With 33 coefficients tested, one or two pass p < 0.05 by chance, so single-country effects are weak evidence.
