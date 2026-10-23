@@ -1,0 +1,37 @@
+{
+  "generated_on": "2026-10-23",
+  "answers": {
+    "Which 5 channels spent the most days on the UK trending list?": {
+      "sql": "SELECT\n    channel_id,\n    ANY_VALUE(channel_title) AS channel_name,\n    SUM(days_trending)      AS total_days_trending\nFROM trending_videos\nWHERE country = 'GB'\nGROUP BY channel_id\nORDER BY total_days_trending DESC\nLIMIT 5",
+      "answer": "The top five channels by days on the UK trending list are Sky Sports Premier League with 2861 days, The United Stand with 2683 days, TNT Sports with 1931 days, MoreSidemen with 1311 days, and FORMULA 1 with 1292 days.",
+      "unsupported_numbers": [],
+      "truncated": false,
+      "attempts": 1,
+      "rows": "{\"schema\":{\"fields\":[{\"name\":\"channel_id\",\"type\":\"string\"},{\"name\":\"channel_name\",\"type\":\"string\"},{\"name\":\"total_days_trending\",\"type\":\"integer\"}],\"pandas_version\":\"1.4.0\"},\"data\":[{\"channel_id\":\"UCNAf1k0yIjyGu3k9BwAg3lg\",\"channel_name\":\"Sky Sports Premier League\",\"total_days_trending\":2861},{\"channel_id\":\"UCMmVPVb0BwSIOWVeDwlPocQ\",\"channel_name\":\"The United Stand\",\"total_days_trending\":2683},{\"channel_id\":\"UC4i_9WvfPRTuRWEaWyfKuFw\",\"channel_name\":\"TNT Sports\",\"total_days_trending\":1931},{\"channel_id\":\"UCh5mLn90vUaB1PbRRx_AiaA\",\"channel_name\":\"MoreSidemen\",\"total_days_trending\":1311},{\"channel_id\":\"UCB_qr75-ydFVKSF9Dmo6izg\",\"channel_name\":\"FORMULA 1\",\"total_days_trending\":1292}]}"
+    },
+    "What is the median number of days a video stays trending in each country?": {
+      "sql": "SELECT\n    country,\n    ROUND(MEDIAN(days_trending), 2) AS median_days_trending,\n    COUNT(*) AS video_count\nFROM trending_videos\nGROUP BY country\nHAVING COUNT(*) >= 30",
+      "answer": "The median time a video stays trending is 6 days in both GB and US, and 3 days in IN. The counts of videos analyzed are 47,607 for GB, 47,142 for US, and 78,847 for IN.",
+      "unsupported_numbers": [],
+      "truncated": false,
+      "attempts": 1,
+      "rows": "{\"schema\":{\"fields\":[{\"name\":\"country\",\"type\":\"string\"},{\"name\":\"median_days_trending\",\"type\":\"number\"},{\"name\":\"video_count\",\"type\":\"integer\"}],\"pandas_version\":\"1.4.0\"},\"data\":[{\"country\":\"GB\",\"median_days_trending\":6.0,\"video_count\":47607},{\"country\":\"US\",\"median_days_trending\":6.0,\"video_count\":47142},{\"country\":\"IN\",\"median_days_trending\":3.0,\"video_count\":78847}]}"
+    },
+    "How many Netflix titles were added each year?": {
+      "sql": "SELECT\n    EXTRACT(year FROM date_added) AS year_added,\n    COUNT(*) AS titles_added\nFROM netflix_titles\nWHERE date_added IS NOT NULL\nGROUP BY year_added\nORDER BY year_added",
+      "answer": "Netflix added 2 titles in 2008 and 2009, 1 title in 2010, then grew to 13 in 2011 and 3 in 2012. From 2013 onward the additions rose sharply, reaching 24 in 2014, 82 in 2015, 429 in 2016, 1,188 in 2017, 1,649 in 2018, 2,015 in 2019, 1,879 in 2020, and 1,494 in 2021.",
+      "unsupported_numbers": [],
+      "truncated": false,
+      "attempts": 1,
+      "rows": "{\"schema\":{\"fields\":[{\"name\":\"year_added\",\"type\":\"integer\"},{\"name\":\"titles_added\",\"type\":\"integer\"}],\"pandas_version\":\"1.4.0\"},\"data\":[{\"year_added\":2008,\"titles_added\":2},{\"year_added\":2009,\"titles_added\":2},{\"year_added\":2010,\"titles_added\":1},{\"year_added\":2011,\"titles_added\":13},{\"year_added\":2012,\"titles_added\":3},{\"year_added\":2013,\"titles_added\":11},{\"year_added\":2014,\"titles_added\":24},{\"year_added\":2015,\"titles_added\":82},{\"year_added\":2016,\"titles_added\":429},{\"year_added\":2017,\"titles_added\":1188},{\"year_added\":2018,\"titles_added\":1649},{\"year_added\":2019,\"titles_added\":2015},{\"year_added\":2020,\"titles_added\":1879},{\"year_added\":2021,\"titles_added\":1494}]}"
+    },
+    "Which categories get the most likes per 1,000 views in India?": {
+      "sql": "WITH india_stats AS (\n    SELECT\n        category,\n        (likes_at_peak::DOUBLE / NULLIF(peak_views, 0)) * 1000.0 AS likes_per_1000\n    FROM trending_videos\n    WHERE country = 'IN'\n      AND likes_at_peak IS NOT NULL\n      AND peak_views IS NOT NULL\n      AND peak_views > 0\n)\nSELECT\n    category,\n    ROUND(AVG(likes_per_1000), 2) AS likes_per_1000_views,\n    COUNT(*) AS video_count\nFROM india_stats\nGROUP BY category\nHAVING COUNT(*) >= 30\nORDER BY likes_per_1000_views DESC",
+      "answer": "Gaming leads with 86.09 likes per 1,000 views, followed by Science & Technology at 81.39, and Travel & Events at 73.46.",
+      "unsupported_numbers": [],
+      "truncated": false,
+      "attempts": 1,
+      "rows": "{\"schema\":{\"fields\":[{\"name\":\"category\",\"type\":\"string\"},{\"name\":\"likes_per_1000_views\",\"type\":\"number\"},{\"name\":\"video_count\",\"type\":\"integer\"}],\"pandas_version\":\"1.4.0\"},\"data\":[{\"category\":\"Gaming\",\"likes_per_1000_views\":86.09,\"video_count\":4629},{\"category\":\"Science & Technology\",\"likes_per_1000_views\":81.39,\"video_count\":2475},{\"category\":\"Travel & Events\",\"likes_per_1000_views\":73.46,\"video_count\":576},{\"category\":\"Comedy\",\"likes_per_1000_views\":68.38,\"video_count\":4720},{\"category\":\"Education\",\"likes_per_1000_views\":65.87,\"video_count\":2163},{\"category\":\"People & Blogs\",\"likes_per_1000_views\":60.32,\"video_count\":12540},{\"category\":\"Pets & Animals\",\"likes_per_1000_views\":55.47,\"video_count\":30},{\"category\":\"Music\",\"likes_per_1000_views\":50.04,\"video_count\":7979},{\"category\":\"Film & Animation\",\"likes_per_1000_views\":40.38,\"video_count\":1601},{\"category\":\"Howto & Style\",\"likes_per_1000_views\":38.82,\"video_count\":2410},{\"category\":\"Sports\",\"likes_per_1000_views\":38.67,\"video_count\":2403},{\"category\":\"Autos & Vehicles\",\"likes_per_1000_views\":38.29,\"video_count\":495},{\"category\":\"Entertainment\",\"likes_per_1000_views\":35.73,\"video_count\":33645},{\"category\":\"News & Politics\",\"likes_per_1000_views\":20.5,\"video_count\":2455}]}"
+    }
+  }
+}
