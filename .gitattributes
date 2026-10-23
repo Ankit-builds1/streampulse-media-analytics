@@ -1,0 +1,2 @@
+# LightGBM model files must keep their exact bytes: Windows line-ending conversion on checkout breaks loading.
+models/*.txt -text
