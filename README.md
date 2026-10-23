@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/MLflow-tracking-0194E2?logo=mlflow&logoColor=white" alt="MLflow">
   <img src="https://img.shields.io/badge/Groq-LLM-F55036" alt="Groq">
   <img src="https://img.shields.io/badge/Streamlit-app-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
-  <img src="https://img.shields.io/badge/tests-92%20passing-2EA44F" alt="92 tests passing">
+  <img src="https://img.shields.io/badge/tests-95%20passing-2EA44F" alt="95 tests passing">
 </p>
 
 <p align="center">
@@ -221,7 +221,8 @@ reports/         findings, data quality, cleaning logs, insight report, anomalie
 evals/           evaluation reports and raw results for every AI feature
 models/          saved LightGBM boosters used by the app
 app/             Streamlit app, its slim requirements and its 26 MB data bundle
-tests/           92 tests: cleaning rules, leak-free features, SQL safety, number checks, uploads
+powerbi/         Power BI export, DAX measures, theme, build guide and expected values
+tests/           95 tests: cleaning rules, leak-free features, SQL safety, number checks, uploads
 images/          screenshots used in this README
 ```
 
@@ -241,7 +242,8 @@ IMDb data is for personal and non-commercial use only.
 
 ## Next steps
 
-- A Power BI version of the dashboard, built from the same tables.
+- Finish the Power BI report. The star-schema export, DAX measures, theme and a page-by-page build guide with
+  expected values are in [`powerbi/`](powerbi/README.md).
 - Retrain the virality model on 2023 and 2024 data to fix its drift, and test whether calibrating it per country
   closes the gap in US and UK probabilities.
 - Retrieval for the title optimizer: show the most similar past trending titles, found with the existing

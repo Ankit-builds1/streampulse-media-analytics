@@ -1,0 +1,105 @@
+// StreamPulse measures. Create an empty table called _Measures (Home > Enter data > Load), then add each measure
+// below to it with New measure. Names match powerbi/expected_values.md, so each can be checked against it.
+
+// ---------- Volume ----------
+
+Trending Runs = COUNTROWS ( fact_trending_runs )
+
+Channels = DISTINCTCOUNT ( fact_trending_runs[channel_id] )
+
+// Runs already on the list on the first day of data started earlier, so their timing is unknown.
+// The speed and duration measures use only runs with a known start, as the analysis did.
+Runs With Known Start =
+CALCULATE ( [Trending Runs], fact_trending_runs[full_run_known] = 1 )
+
+// ---------- Speed and staying power ----------
+
+% Trended By Next Day =
+CALCULATE (
+    AVERAGE ( fact_trending_runs[trended_by_next_day] ),
+    fact_trending_runs[full_run_known] = 1
+)
+
+Median Days On List =
+CALCULATE (
+    MEDIAN ( fact_trending_runs[days_trending] ),
+    fact_trending_runs[full_run_known] = 1
+)
+
+// Days on the list are whole numbers, so medians often tie; the average shows differences between categories.
+Average Days On List =
+CALCULATE (
+    AVERAGE ( fact_trending_runs[days_trending] ),
+    fact_trending_runs[full_run_known] = 1
+)
+
+// ---------- Engagement on the first trending day ----------
+
+Median Likes per 1k Views =
+CALCULATE (
+    MEDIAN ( fact_trending_runs[likes_per_1k_views] ),
+    fact_trending_runs[full_run_known] = 1,
+    fact_trending_runs[first_day_views] > 0
+)
+
+Median Comments per 1k Views =
+CALCULATE (
+    MEDIAN ( fact_trending_runs[comments_per_1k_views] ),
+    fact_trending_runs[full_run_known] = 1,
+    fact_trending_runs[first_day_views] > 0
+)
+
+// Peak views are only complete for runs that started and ended inside the data.
+Median Peak Views =
+CALCULATE (
+    MEDIAN ( fact_trending_runs[peak_views] ),
+    fact_trending_runs[completed_run] = 1
+)
+
+// ---------- Mix and timing ----------
+
+// Share of the selected country's runs in each category (use with dim_category[category] on an axis).
+Share Of Country Runs % =
+DIVIDE ( [Trending Runs], CALCULATE ( [Trending Runs], REMOVEFILTERS ( dim_category ) ) )
+
+// Share of runs uploaded in each weekday and hour cell of the heatmap. The weekday number is removed too,
+// because Power BI filters on a sort-by column as well as the column shown.
+Upload Slot Share % =
+DIVIDE (
+    [Trending Runs],
+    CALCULATE (
+        [Trending Runs],
+        REMOVEFILTERS (
+            fact_trending_runs[upload_weekday_name],
+            fact_trending_runs[upload_weekday_local],
+            fact_trending_runs[upload_hour_local]
+        )
+    )
+)
+
+// ---------- Creators ----------
+
+Channel Slots = SUM ( fact_channel_slots[list_slots] )
+
+// Share of all list slots held by the 10 channels with the most slots, in the current country filter.
+Top 10 Channel Share % =
+VAR TopTenChannels =
+    TOPN ( 10, VALUES ( fact_channel_slots[channel_id] ), [Channel Slots] )
+RETURN
+    DIVIDE ( CALCULATE ( [Channel Slots], TopTenChannels ), [Channel Slots] )
+
+Shared Videos = SUM ( fact_country_overlap[shared_videos] )
+
+// ---------- Netflix ----------
+
+Netflix Titles = COUNTROWS ( netflix_titles )
+
+// Ratings with few votes are noisy; the analysis used titles with at least 1,000 IMDb votes.
+Median IMDb Rating =
+CALCULATE ( MEDIAN ( netflix_titles[imdb_rating] ), netflix_titles[imdb_votes] >= 1000 )
+
+IMDb Match Rate % = AVERAGE ( netflix_titles[imdb_matched] )
+
+// ---------- Spikes ----------
+
+Spikes Flagged = COUNTROWS ( spikes )
