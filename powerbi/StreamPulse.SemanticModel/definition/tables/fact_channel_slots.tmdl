@@ -1,0 +1,37 @@
+table fact_channel_slots
+	lineageTag: 38dc6878-e5ec-5cae-b53a-53bdf6aa4af5
+
+	column country
+		dataType: string
+		lineageTag: 61caf10f-b085-5e9c-bd7d-77819eb1349d
+		summarizeBy: none
+		sourceColumn: country
+
+	column channel_id
+		dataType: string
+		lineageTag: 944e11ed-bd45-555b-99b9-6653efbea103
+		summarizeBy: none
+		sourceColumn: channel_id
+
+	column list_slots
+		dataType: int64
+		lineageTag: db2e4f8b-2ce9-5e6d-ad55-89b41de4e991
+		summarizeBy: none
+		sourceColumn: list_slots
+
+	column trending_videos
+		dataType: int64
+		lineageTag: b4866965-4856-5a5e-b6e0-fa4eea232604
+		summarizeBy: none
+		sourceColumn: trending_videos
+
+	partition fact_channel_slots = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "fact_channel_slots.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"country", type text}, {"channel_id", type text}, {"list_slots", Int64.Type}, {"trending_videos", Int64.Type}}, "en-US")
+				in
+				    Typed
+

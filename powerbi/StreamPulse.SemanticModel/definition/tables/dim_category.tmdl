@@ -1,0 +1,19 @@
+table dim_category
+	lineageTag: f6b483d7-98af-56c0-a952-268f35570aaa
+
+	column category
+		dataType: string
+		lineageTag: 1c617b93-846d-50ec-b1f2-d82000c3ffac
+		summarizeBy: none
+		sourceColumn: category
+
+	partition dim_category = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "dim_category.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"category", type text}}, "en-US")
+				in
+				    Typed
+

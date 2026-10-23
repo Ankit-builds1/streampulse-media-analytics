@@ -1,0 +1,70 @@
+table dim_date
+	lineageTag: 2797bedf-51db-5cc9-875e-1deabd2752b6
+	dataCategory: Time
+
+	column date
+		dataType: dateTime
+		isKey
+		formatString: dd mmm yyyy
+		lineageTag: 373fbf02-a053-5134-ae37-52940f1a8834
+		summarizeBy: none
+		sourceColumn: date
+
+	column year
+		dataType: int64
+		lineageTag: 9112d55e-b99d-57bf-affe-bf709ca22e0a
+		summarizeBy: none
+		sourceColumn: year
+
+	column month_number
+		dataType: int64
+		isHidden
+		lineageTag: 246c7611-a3ae-5d5c-b8ea-e3a7f281d2b5
+		summarizeBy: none
+		sourceColumn: month_number
+
+	column month
+		dataType: string
+		lineageTag: 1fe6789a-3558-5db2-a9c7-41758d64fae0
+		summarizeBy: none
+		sourceColumn: month
+		sortByColumn: month_start
+
+	column month_start
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 40fa3747-4dfc-5dae-b843-27c26cc4f52d
+		summarizeBy: none
+		sourceColumn: month_start
+
+	column week_start
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 0b8313cb-9945-56ba-9cf0-c53663597dd7
+		summarizeBy: none
+		sourceColumn: week_start
+
+	column weekday_number
+		dataType: int64
+		isHidden
+		lineageTag: c85e9264-d384-5e4e-ba48-6123c94397b9
+		summarizeBy: none
+		sourceColumn: weekday_number
+
+	column weekday
+		dataType: string
+		lineageTag: fbb65b1c-7a83-506c-a622-d3a86c35bc3c
+		summarizeBy: none
+		sourceColumn: weekday
+		sortByColumn: weekday_number
+
+	partition dim_date = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "dim_date.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"date", type date}, {"year", Int64.Type}, {"month_number", Int64.Type}, {"month", type text}, {"month_start", type date}, {"week_start", type date}, {"weekday_number", Int64.Type}, {"weekday", type text}}, "en-US")
+				in
+				    Typed
+

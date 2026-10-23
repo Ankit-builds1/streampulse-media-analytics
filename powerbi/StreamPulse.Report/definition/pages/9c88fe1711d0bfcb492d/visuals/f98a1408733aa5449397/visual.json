@@ -1,0 +1,77 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "f98a1408733aa5449397",
+  "position": {
+    "x": 655,
+    "y": 582,
+    "z": 0,
+    "height": 125,
+    "width": 605,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Why India is split in two",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#FAFAFA",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "On 6 Oct 2022 YouTube Shorts left India's trending list: 79 of 200 videos the day before, none after. Shorts get more likes per view, so Indian engagement is compared within one side of that date.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#9BA3AF"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

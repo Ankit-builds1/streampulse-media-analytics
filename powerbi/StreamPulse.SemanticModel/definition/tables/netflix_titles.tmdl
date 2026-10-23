@@ -1,0 +1,98 @@
+table netflix_titles
+	lineageTag: 4e2503d8-3e88-5f04-8dc9-54e26ec71055
+
+	column show_id
+		dataType: string
+		lineageTag: 5fd69110-8ada-5290-a88b-98ec5995e73a
+		summarizeBy: none
+		sourceColumn: show_id
+
+	column type
+		dataType: string
+		lineageTag: b4eed0ff-85c9-5d2e-bcfb-02a7968a4bf2
+		summarizeBy: none
+		sourceColumn: type
+
+	column title
+		dataType: string
+		lineageTag: ed1242f0-da15-5dd8-bb0f-47dca7b61c16
+		summarizeBy: none
+		sourceColumn: title
+
+	column main_country
+		dataType: string
+		lineageTag: 2581bd33-d438-547e-bd1f-fbfd31ffff71
+		summarizeBy: none
+		sourceColumn: main_country
+
+	column date_added
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 890373f9-a6b5-55f4-b4ee-7eedda5598f6
+		summarizeBy: none
+		sourceColumn: date_added
+
+	column year_added
+		dataType: int64
+		lineageTag: 0422350c-4fd7-573a-9e4e-98e2ebe7d2e6
+		summarizeBy: none
+		sourceColumn: year_added
+
+	column release_year
+		dataType: int64
+		lineageTag: 4bdcb397-f3ac-5622-b47b-88bcaaf957fa
+		summarizeBy: none
+		sourceColumn: release_year
+
+	column rating
+		dataType: string
+		lineageTag: 0027ebfb-0b45-5a1d-9797-db62a4ce6945
+		summarizeBy: none
+		sourceColumn: rating
+
+	column listed_in
+		dataType: string
+		lineageTag: 56ff1213-2234-56e0-8722-c3b830c18404
+		summarizeBy: none
+		sourceColumn: listed_in
+
+	column duration_minutes
+		dataType: double
+		lineageTag: 386d0157-140b-58e0-b945-80f0d5f74846
+		summarizeBy: none
+		sourceColumn: duration_minutes
+
+	column seasons
+		dataType: double
+		lineageTag: 2679e63b-45f3-598c-a0a6-d94b9cf74b65
+		summarizeBy: none
+		sourceColumn: seasons
+
+	column imdb_rating
+		dataType: double
+		lineageTag: c8d806c0-8529-581a-a69d-837e2765e040
+		summarizeBy: none
+		sourceColumn: imdb_rating
+
+	column imdb_votes
+		dataType: double
+		lineageTag: 1bc84654-fbda-5441-a0c8-812f1b567a13
+		summarizeBy: none
+		sourceColumn: imdb_votes
+
+	column imdb_matched
+		dataType: int64
+		lineageTag: d2f606cd-31c7-5023-8283-eab574413501
+		summarizeBy: none
+		sourceColumn: imdb_matched
+
+	partition netflix_titles = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "netflix_titles.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"show_id", type text}, {"type", type text}, {"title", type text}, {"main_country", type text}, {"date_added", type date}, {"year_added", Int64.Type}, {"release_year", Int64.Type}, {"rating", type text}, {"listed_in", type text}, {"duration_minutes", type number}, {"seasons", type number}, {"imdb_rating", type number}, {"imdb_votes", type number}, {"imdb_matched", Int64.Type}}, "en-US")
+				in
+				    Typed
+

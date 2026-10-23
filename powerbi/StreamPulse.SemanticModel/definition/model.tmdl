@@ -1,0 +1,29 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-IN
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DevMode"]
+
+annotation PBI_QueryOrder = ["_Measures","dim_category","dim_channel","dim_country","dim_date","fact_channel_slots","fact_country_overlap","fact_trending_runs","netflix_titles","spikes","topic_monthly","DataFolder"]
+
+ref table _Measures
+ref table dim_category
+ref table dim_channel
+ref table dim_country
+ref table dim_date
+ref table fact_channel_slots
+ref table fact_country_overlap
+ref table fact_trending_runs
+ref table netflix_titles
+ref table spikes
+ref table topic_monthly
+
+ref cultureInfo en-US
+

@@ -1,0 +1,165 @@
+table _Measures
+	lineageTag: 412838dd-a162-587a-b8f0-f71e9585a003
+
+	measure 'Trending Runs' = COUNTROWS ( fact_trending_runs )
+		formatString: #,0
+		lineageTag: fa2e37fe-1a4c-552d-913e-ccef654e2a21
+
+	measure Channels = DISTINCTCOUNT ( fact_trending_runs[channel_id] )
+		formatString: #,0
+		lineageTag: d3a11478-2b5b-5e36-822e-52e112f3e6b1
+
+	measure 'Runs With Known Start' = CALCULATE ( [Trending Runs], fact_trending_runs[full_run_known] = 1 )
+		formatString: #,0
+		lineageTag: 1f9295a1-7f3f-592b-946a-988febe80ca8
+
+	measure '% Trended By Next Day' =
+			CALCULATE (
+			    AVERAGE ( fact_trending_runs[trended_by_next_day] ),
+			    fact_trending_runs[full_run_known] = 1
+			)
+		formatString: 0.0%
+		lineageTag: a405aa39-0dd9-5e36-b6cd-aa5e44693562
+
+	measure 'Median Days On List' =
+			CALCULATE (
+			    MEDIAN ( fact_trending_runs[days_trending] ),
+			    fact_trending_runs[full_run_known] = 1
+			)
+		formatString: #,0
+		lineageTag: ac1c1456-8288-5223-86f3-09a533af7130
+
+	measure 'Average Days On List' =
+			CALCULATE (
+			    AVERAGE ( fact_trending_runs[days_trending] ),
+			    fact_trending_runs[full_run_known] = 1
+			)
+		formatString: 0.0
+		lineageTag: 80432159-4baf-5587-bcef-0310fe941747
+
+	measure 'Median Likes per 1k Views' =
+			CALCULATE (
+			    MEDIAN ( fact_trending_runs[likes_per_1k_views] ),
+			    fact_trending_runs[full_run_known] = 1,
+			    fact_trending_runs[first_day_views] > 0
+			)
+		formatString: 0.0
+		lineageTag: 4ba5b582-1b2a-5c99-8706-3f789798a024
+
+	measure 'Median Comments per 1k Views' =
+			CALCULATE (
+			    MEDIAN ( fact_trending_runs[comments_per_1k_views] ),
+			    fact_trending_runs[full_run_known] = 1,
+			    fact_trending_runs[first_day_views] > 0
+			)
+		formatString: 0.00
+		lineageTag: cb06e0a6-3534-5b3d-a09a-e476a082a855
+
+	measure 'Median Peak Views' =
+			CALCULATE (
+			    MEDIAN ( fact_trending_runs[peak_views] ),
+			    fact_trending_runs[completed_run] = 1
+			)
+		formatString: #,0
+		lineageTag: 2dad3b42-3a4e-562c-9be3-8fe30a1c2231
+
+	measure 'Share Of Country Runs %' = DIVIDE ( [Trending Runs], CALCULATE ( [Trending Runs], REMOVEFILTERS ( dim_category ) ) )
+		formatString: 0.0%
+		lineageTag: db594760-fd05-50fd-997e-635b835ec8ff
+
+	measure 'Upload Slot Share %' =
+			DIVIDE (
+			    [Trending Runs],
+			    CALCULATE (
+			        [Trending Runs],
+			        REMOVEFILTERS (
+			            fact_trending_runs[upload_weekday_name],
+			            fact_trending_runs[upload_weekday_local],
+			            fact_trending_runs[upload_hour_local]
+			        )
+			    )
+			)
+		formatString: 0.0%
+		lineageTag: 73ea284b-e7ec-5fb4-91a7-9ebe6898cbef
+
+	measure 'Channel Slots' = SUM ( fact_channel_slots[list_slots] )
+		formatString: #,0
+		lineageTag: 70da04ff-b08e-57c0-b366-3b20d935145e
+
+	measure 'Top 10 Channel Share %' =
+			VAR TopTenChannels =
+			    TOPN ( 10, VALUES ( fact_channel_slots[channel_id] ), [Channel Slots] )
+			RETURN
+			    DIVIDE ( CALCULATE ( [Channel Slots], TopTenChannels ), [Channel Slots] )
+		formatString: 0.0%
+		lineageTag: 5af07af0-a717-5403-918d-94db234be124
+
+	measure 'Shared Videos' = SUM ( fact_country_overlap[shared_videos] )
+		formatString: #,0
+		lineageTag: 5d3345d6-ef0f-5c90-86e8-acf74f50ab38
+
+	measure 'Netflix Titles' = COUNTROWS ( netflix_titles )
+		formatString: #,0
+		lineageTag: ade5fb10-5eb0-598b-95f4-ad3c77213a29
+
+	measure 'Median IMDb Rating' = CALCULATE ( MEDIAN ( netflix_titles[imdb_rating] ), netflix_titles[imdb_votes] >= 1000 )
+		formatString: 0.0
+		lineageTag: fad31ba1-0bb8-5575-906c-75b20d3bdc2b
+
+	measure 'IMDb Match Rate %' = AVERAGE ( netflix_titles[imdb_matched] )
+		formatString: 0.0%
+		lineageTag: 15e50943-4292-5c04-b3e4-0db1d9ab87ca
+
+	measure 'Spikes Flagged' = COUNTROWS ( spikes )
+		formatString: #,0
+		lineageTag: c64f5230-acd0-5243-b9d7-6051333de513
+
+	measure 'Trending Runs (Full Weeks)' =
+			IF (
+			    MIN ( dim_date[week_start] ) < DATE ( 2020, 8, 17 ) || MAX ( dim_date[week_start] ) > DATE ( 2024, 4, 8 ),
+			    BLANK (),
+			    [Trending Runs]
+			)
+		formatString: #,0
+		lineageTag: 0d97c3f1-8f38-583c-ba8f-aee23a4c655d
+
+	measure 'Runs Up To 20 Days' = IF ( SELECTEDVALUE ( fact_trending_runs[days_trending] ) <= 20, [Runs With Known Start] )
+		formatString: #,0
+		lineageTag: 75623471-4b59-57a2-b83c-a620cf05df95
+
+	measure 'Netflix Titles 2015 On' = IF ( SELECTEDVALUE ( netflix_titles[year_added] ) >= 2015, [Netflix Titles] )
+		formatString: #,0
+		lineageTag: 33686b27-714a-54f5-b7c7-5cd06c168bd5
+
+	measure 'Median IMDb Rating 2015 On' = IF ( SELECTEDVALUE ( netflix_titles[year_added] ) >= 2015, [Median IMDb Rating] )
+		formatString: #,0
+		lineageTag: 4baae3ac-f71c-50de-9e74-4cf09371b991
+
+	measure 'Netflix Titles Top 10 Countries' =
+			VAR KnownCountries =
+			    FILTER ( ALL ( netflix_titles[main_country] ), netflix_titles[main_country] <> "" )
+			VAR CurrentCountry = SELECTEDVALUE ( netflix_titles[main_country] )
+			RETURN
+			    IF (
+			        CurrentCountry <> ""
+			            && RANKX ( KnownCountries, [Netflix Titles] ) <= 10,
+			        [Netflix Titles]
+			    )
+		formatString: #,0
+		lineageTag: e11ffc0b-c7e9-53b1-8bc2-de3e67ac924c
+
+	column Placeholder
+		dataType: string
+		isHidden
+		lineageTag: 48d2a50f-a74b-5fa9-9b34-c4ded3f7c61c
+		summarizeBy: none
+		sourceColumn: Placeholder
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [Placeholder = text], {})
+				in
+				    Source
+

@@ -1,0 +1,5 @@
+expression DataFolder = "D:\PROJECTS\STREAMPULSE\powerbi\data\" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 2a751b6e-20e0-5335-ae42-8af60e9da8cd
+
+	annotation PBI_ResultType = Text
+

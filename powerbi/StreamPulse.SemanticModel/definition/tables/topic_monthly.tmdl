@@ -1,0 +1,44 @@
+table topic_monthly
+	lineageTag: 4f0883f5-bf0c-5fbc-891a-c7e0ad3dc0c9
+
+	column month
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 6e3eb032-b29b-5e36-8e37-c19429347893
+		summarizeBy: none
+		sourceColumn: month
+
+	column country
+		dataType: string
+		lineageTag: bcfef006-f6c1-5924-9595-997465d8edb1
+		summarizeBy: none
+		sourceColumn: country
+
+	column topic
+		dataType: int64
+		lineageTag: 777b91ae-759c-5799-ad65-e0c275a048d0
+		summarizeBy: none
+		sourceColumn: topic
+
+	column name
+		dataType: string
+		lineageTag: 2d83b992-1e28-571f-9110-a7d999b2135e
+		summarizeBy: none
+		sourceColumn: name
+
+	column new_videos
+		dataType: int64
+		lineageTag: 611174ba-663a-5823-97b3-1b8e4e516be4
+		summarizeBy: none
+		sourceColumn: new_videos
+
+	partition topic_monthly = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "topic_monthly.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"month", type date}, {"country", type text}, {"topic", Int64.Type}, {"name", type text}, {"new_videos", Int64.Type}}, "en-US")
+				in
+				    Typed
+

@@ -1,0 +1,38 @@
+table dim_country
+	lineageTag: 3a40e553-2403-5255-9ef4-2eeb8641b41a
+
+	column country
+		dataType: string
+		lineageTag: 3dfbca3d-0684-5b2c-846c-1c5243394f86
+		summarizeBy: none
+		sourceColumn: country
+
+	column country_name
+		dataType: string
+		lineageTag: 933f8a67-4c1b-57e3-9ce9-2f4f164837ca
+		summarizeBy: none
+		sourceColumn: country_name
+
+	column country_color
+		dataType: string
+		isHidden
+		lineageTag: 0d80c80d-78d1-5f7e-9c50-504f8854f98e
+		summarizeBy: none
+		sourceColumn: country_color
+
+	column timezone
+		dataType: string
+		lineageTag: 6d6497ed-bd66-56f4-aabe-f65fa3b1940d
+		summarizeBy: none
+		sourceColumn: timezone
+
+	partition dim_country = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "dim_country.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"country", type text}, {"country_name", type text}, {"country_color", type text}, {"timezone", type text}}, "en-US")
+				in
+				    Typed
+

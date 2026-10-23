@@ -1,0 +1,44 @@
+relationship 7b1a6dbe-a968-5041-889c-3245f76fb290
+	fromColumn: fact_trending_runs.country
+	toColumn: dim_country.country
+
+relationship c2865d9d-0d2a-5fb6-ba43-20c402e2b6d9
+	fromColumn: fact_channel_slots.country
+	toColumn: dim_country.country
+
+relationship 723ad03a-fd32-50e5-977f-fe59d0a8033f
+	fromColumn: fact_country_overlap.country
+	toColumn: dim_country.country
+
+relationship 0d174b4e-64e3-5ded-8243-7d9cad5c1507
+	fromColumn: spikes.country
+	toColumn: dim_country.country
+
+relationship 6fb1ddaa-7b7e-5bd3-a158-688a825b2c17
+	fromColumn: topic_monthly.country
+	toColumn: dim_country.country
+
+relationship cec5a718-efed-5393-8c27-178e389dffa7
+	fromColumn: fact_trending_runs.category
+	toColumn: dim_category.category
+
+relationship 7d74ba60-2fdb-5dd9-a1cb-0993bc125a55
+	fromColumn: spikes.category
+	toColumn: dim_category.category
+
+relationship 80aba721-1703-552f-92bd-22ec9cd1c695
+	fromColumn: fact_trending_runs.channel_id
+	toColumn: dim_channel.channel_id
+
+relationship 73b3437c-892b-5e2f-b081-d8317d49c1cc
+	fromColumn: fact_channel_slots.channel_id
+	toColumn: dim_channel.channel_id
+
+relationship 5dce82b2-7e95-59c7-8a22-ed0f893950f6
+	fromColumn: fact_trending_runs.first_trending_date
+	toColumn: dim_date.date
+
+relationship dc1a8c9b-870d-5d6a-8381-41c80829b506
+	fromColumn: spikes.trending_date
+	toColumn: dim_date.date
+

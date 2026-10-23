@@ -1,0 +1,72 @@
+table spikes
+	lineageTag: 302bb588-85e7-53c4-bdb0-b16d2efa5b4e
+
+	column country
+		dataType: string
+		lineageTag: 949cc290-a262-52b9-986d-275a5701a406
+		summarizeBy: none
+		sourceColumn: country
+
+	column category
+		dataType: string
+		lineageTag: 29610b25-0c84-5148-8def-b7bf55ee9295
+		summarizeBy: none
+		sourceColumn: category
+
+	column trending_date
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: d675f9ef-a85e-5889-b3cf-13d11f629094
+		summarizeBy: none
+		sourceColumn: trending_date
+
+	column new_videos_raw
+		dataType: int64
+		formatString: 0
+		lineageTag: 6ae493e9-1ae9-508a-953d-9d1efe0ff988
+		summarizeBy: none
+		sourceColumn: new_videos_raw
+
+	column new_videos
+		dataType: double
+		formatString: 0
+		lineageTag: 7ee7d528-564d-5334-a8a6-c4e4d8be9406
+		summarizeBy: none
+		sourceColumn: new_videos
+
+	column baseline_median
+		dataType: double
+		formatString: 0
+		lineageTag: 846b4169-de70-5c33-9c7b-6e4a880fa830
+		summarizeBy: none
+		sourceColumn: baseline_median
+
+	column robust_z
+		dataType: double
+		formatString: 0.0
+		lineageTag: e608b664-4834-5539-8ea0-2eb4ef5788d7
+		summarizeBy: none
+		sourceColumn: robust_z
+
+	column explanation
+		dataType: string
+		lineageTag: c0cacf76-1804-5dfc-88f4-38b7d8a0bea7
+		summarizeBy: none
+		sourceColumn: explanation
+
+	column top_titles
+		dataType: string
+		lineageTag: 82dc072f-fab0-579a-9397-60db66818a3c
+		summarizeBy: none
+		sourceColumn: top_titles
+
+	partition spikes = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "spikes.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"country", type text}, {"category", type text}, {"trending_date", type date}, {"new_videos_raw", Int64.Type}, {"new_videos", type number}, {"baseline_median", type number}, {"robust_z", type number}, {"explanation", type text}, {"top_titles", type text}}, "en-US")
+				in
+				    Typed
+

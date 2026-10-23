@@ -1,0 +1,121 @@
+{
+  "name": "StreamPulse",
+  "dataColors": [
+    "#1BAF7A",
+    "#2A78D6",
+    "#EB6834",
+    "#9A6FD6",
+    "#E3B341",
+    "#E34948",
+    "#5FB7D4",
+    "#C9C8C0"
+  ],
+  "background": "#0E1117",
+  "foreground": "#FAFAFA",
+  "tableAccent": "#2A78D6",
+  "good": "#1BAF7A",
+  "neutral": "#E3B341",
+  "bad": "#E34948",
+  "maximum": "#2A78D6",
+  "center": "#5A6270",
+  "minimum": "#161B22",
+  "textClasses": {
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 13,
+      "color": "#FAFAFA"
+    },
+    "header": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 12,
+      "color": "#FAFAFA"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 10,
+      "color": "#C9CDD4"
+    },
+    "callout": {
+      "fontFace": "Segoe UI Light",
+      "fontSize": 30,
+      "color": "#FAFAFA"
+    }
+  },
+  "visualStyles": {
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#0E1117"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "outspace": [
+          {
+            "color": {
+              "solid": {
+                "color": "#0E1117"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    },
+    "*": {
+      "*": {
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#161B22"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#262C36"
+              }
+            },
+            "radius": 8
+          }
+        ],
+        "title": [
+          {
+            "show": true,
+            "fontColor": {
+              "solid": {
+                "color": "#FAFAFA"
+              }
+            },
+            "fontSize": 12
+          }
+        ],
+        "visualHeader": [
+          {
+            "background": {
+              "solid": {
+                "color": "#161B22"
+              }
+            },
+            "foreground": {
+              "solid": {
+                "color": "#C9CDD4"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

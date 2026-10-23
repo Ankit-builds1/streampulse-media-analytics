@@ -1,0 +1,196 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "3a9d80a8d0edcecd08fa",
+  "position": {
+    "x": 20,
+    "y": 412,
+    "z": 0,
+    "height": 295,
+    "width": 1240,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "drillFilterOtherVisuals": true,
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "spikes"
+                    }
+                  },
+                  "Property": "trending_date"
+                }
+              },
+              "queryRef": "spikes.trending_date",
+              "nativeQueryRef": "trending_date",
+              "displayName": "Date"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "spikes"
+                    }
+                  },
+                  "Property": "country"
+                }
+              },
+              "queryRef": "spikes.country",
+              "nativeQueryRef": "country",
+              "displayName": "Country"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "spikes"
+                    }
+                  },
+                  "Property": "category"
+                }
+              },
+              "queryRef": "spikes.category",
+              "nativeQueryRef": "category",
+              "displayName": "Category"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "spikes"
+                    }
+                  },
+                  "Property": "new_videos"
+                }
+              },
+              "queryRef": "spikes.new_videos",
+              "nativeQueryRef": "new_videos",
+              "displayName": "New videos"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "spikes"
+                    }
+                  },
+                  "Property": "robust_z"
+                }
+              },
+              "queryRef": "spikes.robust_z",
+              "nativeQueryRef": "robust_z",
+              "displayName": "Robust z"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "spikes"
+                    }
+                  },
+                  "Property": "explanation"
+                }
+              },
+              "queryRef": "spikes.explanation",
+              "nativeQueryRef": "explanation",
+              "displayName": "AI note"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "spikes"
+                    }
+                  },
+                  "Property": "top_titles"
+                }
+              },
+              "queryRef": "spikes.top_titles",
+              "nativeQueryRef": "top_titles",
+              "displayName": "Top titles"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "spikes"
+                  }
+                },
+                "Property": "robust_z"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Spikes with the AI note and the titles behind it'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

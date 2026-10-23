@@ -1,0 +1,165 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1209.62191359927,
+            "y": 348.76369690323861
+          },
+          "nodeIndex": "_Measures",
+          "nodeLineageTag": "412838dd-a162-587a-b8f0-f71e9585a003",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 110.41002184346195,
+            "y": 724.0820294625978
+          },
+          "nodeIndex": "dim_category",
+          "nodeLineageTag": "f6b483d7-98af-56c0-a952-268f35570aaa",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 307.03680723731486,
+            "y": -50
+          },
+          "nodeIndex": "dim_channel",
+          "nodeLineageTag": "a31fcc22-2dfb-510c-b8b0-52d470ca86af",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 686.56260833593433,
+            "y": 358.42709061199048
+          },
+          "nodeIndex": "dim_country",
+          "nodeLineageTag": "3a40e553-2403-5255-9ef4-2eeb8641b41a",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 133.3190944662922
+          },
+          "nodeIndex": "dim_date",
+          "nodeLineageTag": "2797bedf-51db-5cc9-875e-1deabd2752b6",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 751.50399315710274,
+            "y": 47.343101893103039
+          },
+          "nodeIndex": "fact_channel_slots",
+          "nodeLineageTag": "38dc6878-e5ec-5cae-b53a-53bdf6aa4af5",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 686.51871391093869,
+            "y": 771.52739380647722
+          },
+          "nodeIndex": "fact_country_overlap",
+          "nodeLineageTag": "07074bbf-cd5e-5729-9b2d-f69c26010111",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 400.3343844005455,
+            "y": 131.70448161258082
+          },
+          "nodeIndex": "fact_trending_runs",
+          "nodeLineageTag": "40bf7b54-c193-5490-bebe-5d04c4cd5847",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1493.62191359927,
+            "y": 348.76369690323861
+          },
+          "nodeIndex": "netflix_titles",
+          "nodeLineageTag": "4e2503d8-3e88-5f04-8dc9-54e26ec71055",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 400.28893340228217,
+            "y": 579.74814979304153
+          },
+          "nodeIndex": "spikes",
+          "nodeLineageTag": "302bb588-85e7-53c4-bdb0-b16d2efa5b4e",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 975.6219135992701,
+            "y": 278.39480723099211
+          },
+          "nodeIndex": "topic_monthly",
+          "nodeLineageTag": "4f0883f5-bf0c-5fbc-891a-c7e0ad3dc0c9",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

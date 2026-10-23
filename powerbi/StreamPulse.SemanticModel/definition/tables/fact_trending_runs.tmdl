@@ -1,0 +1,165 @@
+table fact_trending_runs
+	lineageTag: 40bf7b54-c193-5490-bebe-5d04c4cd5847
+
+	column run_key
+		dataType: string
+		isHidden
+		lineageTag: f58cc4d9-3873-5eb8-bf2f-33046290afbc
+		summarizeBy: none
+		sourceColumn: run_key
+
+	column country
+		dataType: string
+		lineageTag: 88aec433-fd4a-5d67-965f-6b5325ac59ec
+		summarizeBy: none
+		sourceColumn: country
+
+	column video_id
+		dataType: string
+		lineageTag: 9c2dfb9e-f751-57bc-a4e1-bbd3fc009420
+		summarizeBy: none
+		sourceColumn: video_id
+
+	column title
+		dataType: string
+		lineageTag: 0206e840-9886-5983-bfaa-13784c825581
+		summarizeBy: none
+		sourceColumn: title
+
+	column channel_id
+		dataType: string
+		lineageTag: 62963986-aac2-5b8c-8fab-a3956677f8fc
+		summarizeBy: none
+		sourceColumn: channel_id
+
+	column category
+		dataType: string
+		lineageTag: 7a5b7772-2ac6-5058-9566-582b7491f140
+		summarizeBy: none
+		sourceColumn: category
+
+	column published_at_utc
+		dataType: dateTime
+		lineageTag: 4206095f-5a5f-5d79-ad2e-93311deb308c
+		summarizeBy: none
+		sourceColumn: published_at_utc
+
+	column upload_weekday_local
+		dataType: int64
+		isHidden
+		lineageTag: 96fdbf58-f4b9-5ed2-a1b1-d8b6212934eb
+		summarizeBy: none
+		sourceColumn: upload_weekday_local
+
+	column upload_weekday_name
+		dataType: string
+		lineageTag: d3875026-f2d6-513a-aef1-703708234975
+		summarizeBy: none
+		sourceColumn: upload_weekday_name
+		sortByColumn: upload_weekday_local
+
+	column upload_hour_local
+		dataType: int64
+		lineageTag: 54a4ed78-4f6d-5617-8e87-840f1313925d
+		summarizeBy: none
+		sourceColumn: upload_hour_local
+
+	column first_trending_date
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 84b36494-9c52-52b5-b76c-deffc6a1f797
+		summarizeBy: none
+		sourceColumn: first_trending_date
+
+	column last_trending_date
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: ca67a076-e0fd-585f-9afa-740b437d0c7f
+		summarizeBy: none
+		sourceColumn: last_trending_date
+
+	column days_trending
+		dataType: int64
+		lineageTag: 5d8874fd-67e3-535c-b660-2a134f68833c
+		summarizeBy: none
+		sourceColumn: days_trending
+
+	column days_to_trend
+		dataType: int64
+		lineageTag: dc36d2de-7ab4-5192-a163-ff362458ed4e
+		summarizeBy: none
+		sourceColumn: days_to_trend
+
+	column trended_by_next_day
+		dataType: int64
+		lineageTag: a06f1761-6731-5602-a0b3-2f99e5c8a9da
+		summarizeBy: none
+		sourceColumn: trended_by_next_day
+
+	column peak_views
+		dataType: double
+		formatString: #,0
+		lineageTag: fb839f03-2a49-58a2-a03c-2448d09cef88
+		summarizeBy: none
+		sourceColumn: peak_views
+
+	column first_day_views
+		dataType: double
+		lineageTag: bc495d6e-1754-5731-8f2f-63120a2bc3ff
+		summarizeBy: none
+		sourceColumn: first_day_views
+
+	column first_day_likes
+		dataType: double
+		lineageTag: 4fe07ad3-3419-5aa5-958b-4aa7c4d0d352
+		summarizeBy: none
+		sourceColumn: first_day_likes
+
+	column first_day_comments
+		dataType: double
+		lineageTag: cfc901a2-6cd1-5b5a-a494-72598f70f55d
+		summarizeBy: none
+		sourceColumn: first_day_comments
+
+	column likes_per_1k_views
+		dataType: double
+		lineageTag: 8f430a73-9568-5963-95d6-1721b012003f
+		summarizeBy: none
+		sourceColumn: likes_per_1k_views
+
+	column comments_per_1k_views
+		dataType: double
+		lineageTag: 63a64296-7ae9-511d-ad01-6d0f0705b18d
+		summarizeBy: none
+		sourceColumn: comments_per_1k_views
+
+	column full_run_known
+		dataType: int64
+		isHidden
+		lineageTag: 07898b2a-255c-5570-adb9-6fc0b21f7cb0
+		summarizeBy: none
+		sourceColumn: full_run_known
+
+	column completed_run
+		dataType: int64
+		isHidden
+		lineageTag: b8791b77-254d-5229-9565-a1df0de19405
+		summarizeBy: none
+		sourceColumn: completed_run
+
+	column country_period
+		dataType: string
+		lineageTag: ac891188-5283-5f45-b139-13c897db280a
+		summarizeBy: none
+		sourceColumn: country_period
+
+	partition fact_trending_runs = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "fact_trending_runs.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"run_key", type text}, {"country", type text}, {"video_id", type text}, {"title", type text}, {"channel_id", type text}, {"category", type text}, {"published_at_utc", type datetime}, {"upload_weekday_local", Int64.Type}, {"upload_weekday_name", type text}, {"upload_hour_local", Int64.Type}, {"first_trending_date", type date}, {"last_trending_date", type date}, {"days_trending", Int64.Type}, {"days_to_trend", Int64.Type}, {"trended_by_next_day", Int64.Type}, {"peak_views", type number}, {"first_day_views", type number}, {"first_day_likes", type number}, {"first_day_comments", type number}, {"likes_per_1k_views", type number}, {"comments_per_1k_views", type number}, {"full_run_known", Int64.Type}, {"completed_run", Int64.Type}, {"country_period", type text}}, "en-US")
+				in
+				    Typed
+

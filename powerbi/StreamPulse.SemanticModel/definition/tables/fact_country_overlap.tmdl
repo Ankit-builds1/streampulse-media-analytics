@@ -1,0 +1,37 @@
+table fact_country_overlap
+	lineageTag: 07074bbf-cd5e-5729-9b2d-f69c26010111
+
+	column country
+		dataType: string
+		lineageTag: eafd0f44-b52f-56ef-8cf4-de408f0b3a7c
+		summarizeBy: none
+		sourceColumn: country
+
+	column also_trending_in
+		dataType: string
+		lineageTag: 9420bc43-d8d4-59df-97c2-236b9d655a89
+		summarizeBy: none
+		sourceColumn: also_trending_in
+
+	column shared_videos
+		dataType: int64
+		lineageTag: c5fed203-14da-53d4-b740-f986d080e18b
+		summarizeBy: none
+		sourceColumn: shared_videos
+
+	column pct_of_country_videos
+		dataType: double
+		lineageTag: 6208e325-d318-5483-a2f8-c18f44607f4c
+		summarizeBy: none
+		sourceColumn: pct_of_country_videos
+
+	partition fact_country_overlap = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataFolder & "fact_country_overlap.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"country", type text}, {"also_trending_in", type text}, {"shared_videos", Int64.Type}, {"pct_of_country_videos", type number}}, "en-US")
+				in
+				    Typed
+
