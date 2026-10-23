@@ -17,3 +17,5 @@ lightgbm>=4.5
 mlflow>=3.0
 scikit-learn>=1.5
 shap>=0.45
+sentence-transformers>=3.0
+bertopic>=0.16
