@@ -15,8 +15,9 @@ import streamlit as st
 from groq import RateLimitError
 
 from streampulse.app_data import APP_DATA_DIR, SAMPLE_UPLOAD_PATH, connect_app_database
-from streampulse.ask import SCHEMA_NOTES
+from streampulse.ask import SCHEMA_NOTES, build_chart, choose_chart
 from streampulse.charts import COUNTRY_COLORS, SECONDARY_INK
+from streampulse.example_answers import EXAMPLE_QUESTIONS, load_example_answers
 from streampulse.upload import (
     UPLOAD_COUNTRIES, UploadError, build_upload_database, check_upload_header, connect_upload_database,
     country_from_file_name, save_upload, upload_database_path, upload_schema_notes,
@@ -45,8 +46,9 @@ AXIS_LABELS = {"country": "Country", "videos": "Trending videos", "median_days":
                "mean_days": "Average days", "category": "", "week": "", "month": "",
                "new_videos": "New trending videos", "pct_of_videos": "% of the country's trending videos",
                "name": "Topic"}
-QUOTA_MESSAGE = ("The free Groq token limit for today is used up, so AI answers are paused. "
-                 "Charts and saved results still work; please try again later.")
+DAILY_LIMIT_MESSAGE = ("The free Groq token limit for today is used up, so new AI answers are paused. Charts and "
+                       "the saved example answers still work; please try again later.")
+MINUTE_LIMIT_MESSAGE = "The AI service is busy (free tier limit per minute). Please wait a minute and try again."
 
 
 @st.cache_resource
@@ -86,6 +88,11 @@ def read_app_file(name):
     if path.suffix == ".csv":
         return pd.read_csv(path)
     return path.read_text(encoding="utf-8")
+
+
+def rate_limit_message(limit_error):
+    # Groq names the limit it hit; only the daily one means waiting is pointless.
+    return DAILY_LIMIT_MESSAGE if "per day" in str(limit_error) else MINUTE_LIMIT_MESSAGE
 
 
 def country_label(code):
@@ -214,9 +221,15 @@ def overview_tab(source, filters):
 
 def trends_tab(source, filters):
     where, parameters = filter_sql(*filters)
+    # Partial first and last weeks would show as sudden drops, so only weeks fully inside the data are charted.
     weekly = query(f"""
+        WITH data_range AS (SELECT min(first_trending_date) AS first_day, max(first_trending_date) AS last_day
+                            FROM trending_videos)
         SELECT date_trunc('week', first_trending_date) AS week, country, count(*) AS new_videos
-        FROM trending_videos WHERE {where} GROUP BY ALL ORDER BY week""", parameters, source["key"])
+        FROM trending_videos, data_range
+        WHERE {where} AND date_trunc('week', first_trending_date) >= first_day
+          AND date_trunc('week', first_trending_date) + INTERVAL 6 DAY <= last_day
+        GROUP BY ALL ORDER BY week""", parameters, source["key"])
     st.plotly_chart(px.line(weekly, x="week", y="new_videos", color="country", color_discrete_map=COUNTRY_COLORS,
                             labels=AXIS_LABELS, title="New videos entering the trending list per week"),
                     width="stretch")
@@ -324,6 +337,11 @@ def upload_countries_tab(source, filters):
     st.dataframe(overlap, hide_index=True, width="stretch")
 
 
+@st.cache_data
+def read_example_answers():
+    return load_example_answers()
+
+
 @st.cache_data(show_spinner=False)
 def cached_answer(question, source_key, schema_notes):
     from streampulse.ask import answer_question
@@ -333,13 +351,9 @@ def cached_answer(question, source_key, schema_notes):
 def ask_tab(source):
     st.write("Ask a question about the trending data or the Netflix catalog. An LLM writes the SQL, which runs "
              "read-only on the data; the answer's numbers are checked against the result.")
+    saved_answers, saved_on = read_example_answers()
     if source["key"] == BUILT_IN:
-        examples = [
-            "Which 5 channels spent the most days on the UK trending list?",
-            "What is the median number of days a video stays trending in each country?",
-            "How many Netflix titles were added each year?",
-            "Which categories get the most likes per 1,000 views in India?",
-        ]
+        examples = EXAMPLE_QUESTIONS
     else:
         examples = [
             "Which 5 channels spent the most days on the trending list?",
@@ -350,12 +364,18 @@ def ask_tab(source):
     question = st.text_input("Your question", value=example)
     if not question:
         return
-    with st.spinner("Writing and running the query..."):
-        try:
-            result = cached_answer(question, source["key"], source["notes"])
-        except RateLimitError:
-            st.warning(QUOTA_MESSAGE)
-            return
+    if source["key"] == BUILT_IN and question in saved_answers:
+        result = saved_answers[question]
+        chart_choice = choose_chart(result["rows"])
+        result["chart"] = build_chart(result["rows"], chart_choice) if chart_choice else None
+        st.caption(f"Saved answer, made with the same pipeline on {saved_on}. Edit the question to ask live.")
+    else:
+        with st.spinner("Writing and running the query..."):
+            try:
+                result = cached_answer(question, source["key"], source["notes"])
+            except RateLimitError as limit_error:
+                st.warning(rate_limit_message(limit_error))
+                return
     if result["error"]:
         st.error(result["error"])
     else:
@@ -427,8 +447,8 @@ def title_optimizer_tab():
     with st.spinner("Asking the LLM and scoring each title..."):
         try:
             scores = cached_title_suggestions(video["video_id"], video["country"], title)
-        except RateLimitError:
-            st.warning(QUOTA_MESSAGE)
+        except RateLimitError as limit_error:
+            st.warning(rate_limit_message(limit_error))
             return
     shown = scores.assign(
         long_run_chance=(100 * scores["long_run_probability"]).round(1).astype(str) + "%",
