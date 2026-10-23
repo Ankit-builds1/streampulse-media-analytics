@@ -27,3 +27,7 @@ Thumbs.db
 
 # Power BI tables, rebuilt with python -m streampulse.powerbi_export
 powerbi/data/
+
+# Power BI Desktop local state: data cache and per-user settings
+powerbi/**/.pbi/cache.abf
+powerbi/**/.pbi/localSettings.json

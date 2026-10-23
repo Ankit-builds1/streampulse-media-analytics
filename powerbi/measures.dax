@@ -103,3 +103,36 @@ IMDb Match Rate % = AVERAGE ( netflix_titles[imdb_matched] )
 // ---------- Spikes ----------
 
 Spikes Flagged = COUNTROWS ( spikes )
+
+// ---------- Chart helpers ----------
+
+// The first and last weeks of the data are partial and would look like sudden drops on a weekly chart.
+Trending Runs (Full Weeks) =
+IF (
+    MIN ( dim_date[week_start] ) < DATE ( 2020, 8, 17 ) || MAX ( dim_date[week_start] ) > DATE ( 2024, 4, 8 ),
+    BLANK (),
+    [Trending Runs]
+)
+
+// Runs of more than 20 days are a long thin tail; the distribution chart stops there.
+Runs Up To 20 Days =
+IF ( SELECTEDVALUE ( fact_trending_runs[days_trending] ) <= 20, [Runs With Known Start] )
+
+// Before 2015 Netflix added only a handful of titles a year.
+Netflix Titles 2015 On =
+IF ( SELECTEDVALUE ( netflix_titles[year_added] ) >= 2015, [Netflix Titles] )
+
+Median IMDb Rating 2015 On =
+IF ( SELECTEDVALUE ( netflix_titles[year_added] ) >= 2015, [Median IMDb Rating] )
+
+// Titles with no listed country have an empty main_country; they are left out of the ranking.
+Netflix Titles Top 10 Countries =
+VAR KnownCountries =
+    FILTER ( ALL ( netflix_titles[main_country] ), netflix_titles[main_country] <> "" )
+VAR CurrentCountry = SELECTEDVALUE ( netflix_titles[main_country] )
+RETURN
+    IF (
+        CurrentCountry <> ""
+            && RANKX ( KnownCountries, [Netflix Titles] ) <= 10,
+        [Netflix Titles]
+    )

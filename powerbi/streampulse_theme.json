@@ -1,6 +1,6 @@
 {
   "name": "StreamPulse",
-  "dataColors": ["#2A78D6", "#EB6834", "#1BAF7A", "#9A6FD6", "#E3B341", "#E34948", "#5FB7D4", "#C9C8C0"],
+  "dataColors": ["#1BAF7A", "#2A78D6", "#EB6834", "#9A6FD6", "#E3B341", "#E34948", "#5FB7D4", "#C9C8C0"],
   "background": "#0E1117",
   "foreground": "#FAFAFA",
   "tableAccent": "#2A78D6",
