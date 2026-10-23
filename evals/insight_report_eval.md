@@ -43,6 +43,19 @@ trends in the other") and takeaways without a cited fact.
 - **An empty report passed.** One reply was empty, which has no numbers to fail on. A length check now catches it.
 - **Citations the checks could not see.** One reply cited facts as `【F1】`; these are now normalised to `[F1]`.
 
+## Three more runs (next morning)
+
+- Run 1 passed every check but a manual read found three errors: "87.3% of uploads" (the fact is about trending
+  videos, not all uploads), calling the partial 2021 year a slowdown, and a speculative takeaway.
+- Run 2 passed every check and fixed two of those, but repeated "87.3% of Indian uploads". The fact description was
+  reworded to "among videos that trended (not all uploads)".
+- Run 3 fixed "uploads" but brought back the reversed overlap share (2.5% of UK videos shared with India; it is
+  4.2%). The audit caught it and the report lists it as unverified. The same run also showed the audit making its own
+  mistake (rejecting "2,015" as not matching 2,015) and one empty attempt caught by the length check.
+
+The committed `reports/insight_report.md` is run 3, with its unverified sentence listed at the end. Generating until
+a run looks clean would hide how often the model makes these errors.
+
 ## Limitations
 
 - The number check is exact; the sentence audit is an LLM and can miss errors. A manual read of run 4 found two

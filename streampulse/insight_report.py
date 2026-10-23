@@ -21,7 +21,8 @@ FACT_QUERIES = {
     "F2": ("Median days a video stays on the trending list, per country", """
         SELECT country, median(days_trending) AS median_days_on_list
         FROM trending_videos GROUP BY country ORDER BY country"""),
-    "F3": ("Percent of trending videos that reached the list by the day after upload, per country", """
+    "F3": ("Among videos that trended (not all uploads), the percent that first reached the list within one day of "
+           "upload, per country", """
         SELECT country,
                round(100 * avg(CAST(date_diff('day', CAST(published_at AS DATE), first_trending_date) <= 1 AS INTEGER)), 1)
                    AS pct_trending_by_next_day
