@@ -24,3 +24,6 @@ mlflow.db
 .idea/
 Thumbs.db
 .DS_Store
+
+# Power BI tables, rebuilt with python -m streampulse.powerbi_export
+powerbi/data/
