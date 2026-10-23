@@ -109,7 +109,7 @@ def run_read_only(connection, sql):
     return rows, len(fetched) > MAX_ROWS
 
 
-def generate_sql(question, schema, previous_attempt=None):
+def generate_sql(question, schema, previous_attempt=None, schema_notes=SCHEMA_NOTES):
     """Ask the LLM for a query. On a retry, include the failed query and its error so it can fix it."""
     user_prompt = question
     if previous_attempt:
@@ -118,17 +118,17 @@ def generate_sql(question, schema, previous_attempt=None):
             f"\n\nThis query failed:\n```sql\n{failed_sql}\n```\nError: {error_message}\n"
             "Write a corrected query."
         )
-    system_prompt = SYSTEM_PROMPT.format(schema=schema, notes=SCHEMA_NOTES.strip())
+    system_prompt = SYSTEM_PROMPT.format(schema=schema, notes=schema_notes.strip())
     return extract_sql(complete(system_prompt, user_prompt))
 
 
-def ask_data(question, connection=None):
+def ask_data(question, connection=None, schema_notes=SCHEMA_NOTES):
     """Turn a question into SQL, run it safely and return the question, SQL, rows, cut-off flag, attempts and error."""
     connection = connection or connect_for_questions()
     schema = describe_schema(connection)
     previous_attempt = None
     for attempt in range(1, MAX_ATTEMPTS + 1):
-        sql = generate_sql(question, schema, previous_attempt)
+        sql = generate_sql(question, schema, previous_attempt, schema_notes)
         try:
             rows, truncated = run_read_only(connection, sql)
             return {"question": question, "sql": sql, "rows": rows, "truncated": truncated,
@@ -233,9 +233,9 @@ def build_chart(rows, chart_choice):
     return figure
 
 
-def answer_question(question, connection=None):
+def answer_question(question, connection=None, schema_notes=SCHEMA_NOTES):
     """Full Ask the Data flow: SQL, rows, a plain-English answer, unsupported numbers and a chart if one fits."""
-    result = ask_data(question, connection)
+    result = ask_data(question, connection, schema_notes)
     result.update({"answer": None, "unsupported_numbers": [], "chart": None})
     if result["error"] is None:
         result["answer"] = write_answer(question, result["rows"])
