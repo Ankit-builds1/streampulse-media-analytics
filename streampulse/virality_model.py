@@ -11,13 +11,11 @@ import pandas as pd
 from sklearn.metrics import average_precision_score, brier_score_loss, mean_absolute_error, roc_auc_score
 
 from streampulse.load import PROJECT_ROOT
-from streampulse.virality import CATEGORICAL_FEATURES, FEATURES_PATH, NUMERIC_FEATURES
+from streampulse.virality import CATEGORICAL_FEATURES, FEATURES_PATH
+from streampulse.virality_scoring import (  # noqa: F401  (re-exported for notebooks that import them from here)
+    CATEGORIES_PATH, CLASSIFIER_PATH, FEATURE_COLUMNS, MODELS_DIR, REGRESSOR_PATH, feature_matrix, load_saved_models,
+)
 
-FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
-MODELS_DIR = PROJECT_ROOT / "models"
-CLASSIFIER_PATH = MODELS_DIR / "virality_classifier.txt"
-REGRESSOR_PATH = MODELS_DIR / "virality_regressor.txt"
-CATEGORIES_PATH = MODELS_DIR / "virality_categories.json"
 RESULTS_PATH = PROJECT_ROOT / "evals" / "virality_results.csv"
 MLFLOW_DATABASE = PROJECT_ROOT / "mlflow.db"
 MLFLOW_ARTIFACTS = PROJECT_ROOT / "mlruns"
@@ -40,16 +38,6 @@ EARLY_STOPPING_ROUNDS = 100
 def training_categories(train_rows):
     """The categories seen in training for each categorical feature, so every split is encoded the same way."""
     return {column: sorted(train_rows[column].dropna().unique().tolist()) for column in CATEGORICAL_FEATURES}
-
-
-def feature_matrix(rows, categories):
-    """Model inputs: numbers as floats and categorical columns as categories fixed to the training ones."""
-    matrix = rows[FEATURE_COLUMNS].copy()
-    for column in NUMERIC_FEATURES:
-        matrix[column] = matrix[column].astype(float)
-    for column in CATEGORICAL_FEATURES:
-        matrix[column] = pd.Categorical(matrix[column], categories=categories[column])
-    return matrix
 
 
 def baseline_scores(train_rows, rows):
@@ -156,14 +144,6 @@ def save_models(classifier, regressor, categories):
     classifier.booster_.save_model(str(CLASSIFIER_PATH))
     regressor.booster_.save_model(str(REGRESSOR_PATH))
     CATEGORIES_PATH.write_text(json.dumps(categories, indent=2), encoding="utf-8")
-
-
-def load_saved_models():
-    """The saved classifier, regressor and training categories."""
-    classifier = lgb.Booster(model_file=str(CLASSIFIER_PATH))
-    regressor = lgb.Booster(model_file=str(REGRESSOR_PATH))
-    categories = json.loads(CATEGORIES_PATH.read_text(encoding="utf-8"))
-    return classifier, regressor, categories
 
 
 if __name__ == "__main__":

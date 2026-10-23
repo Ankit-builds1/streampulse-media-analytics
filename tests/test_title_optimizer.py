@@ -4,7 +4,7 @@ import pytest
 
 from streampulse.title_optimizer import score_titles, suggestion_problems
 from streampulse.virality import FEATURES_PATH
-from streampulse.virality_model import feature_matrix, load_saved_models
+from streampulse.virality_scoring import feature_matrix, load_saved_models
 
 
 @pytest.mark.parametrize("original, suggested, expected_problem", [

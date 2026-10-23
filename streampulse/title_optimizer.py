@@ -8,7 +8,7 @@ from streampulse.llm import complete
 from streampulse.load import PROJECT_ROOT
 from streampulse.titles import TITLE_FEATURES, add_title_features
 from streampulse.virality import FEATURES_PATH
-from streampulse.virality_model import feature_matrix, load_saved_models
+from streampulse.virality_scoring import feature_matrix, load_saved_models
 
 YOUTUBE_TITLE_LIMIT = 100
 SUGGESTION_COUNT = 3
