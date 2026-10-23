@@ -196,11 +196,11 @@ def overview_tab(source, filters):
     left, right = st.columns(2)
     left.plotly_chart(px.bar(by_country, x="country", y="videos", color="country", color_discrete_map=COUNTRY_COLORS,
                              labels=AXIS_LABELS, title="Trending videos by country").update_layout(showlegend=False),
-                      use_container_width=True)
+                      width="stretch")
     right.plotly_chart(px.bar(by_country, x="country", y="median_days", color="country",
                               color_discrete_map=COUNTRY_COLORS, labels=AXIS_LABELS,
                               title="Median days on the list").update_layout(showlegend=False),
-                       use_container_width=True)
+                       width="stretch")
 
     if source["key"] != BUILT_IN:
         st.caption("The AI insight report covers the built-in data, so it is not shown for uploads.")
@@ -219,7 +219,7 @@ def trends_tab(source, filters):
         FROM trending_videos WHERE {where} GROUP BY ALL ORDER BY week""", parameters, source["key"])
     st.plotly_chart(px.line(weekly, x="week", y="new_videos", color="country", color_discrete_map=COUNTRY_COLORS,
                             labels=AXIS_LABELS, title="New videos entering the trending list per week"),
-                    use_container_width=True)
+                    width="stretch")
 
     # Days on the list are whole numbers, so category medians mostly tie at 3 or 6; the mean shows the differences.
     by_category = query(f"""
@@ -228,7 +228,7 @@ def trends_tab(source, filters):
     st.plotly_chart(px.bar(by_category, x="mean_days", y="category", color="country", barmode="group",
                            orientation="h", color_discrete_map=COUNTRY_COLORS, height=600, labels=AXIS_LABELS,
                            title="Average days on the list by category (categories with 100+ videos)"),
-                    use_container_width=True)
+                    width="stretch")
 
     if source["key"] != BUILT_IN:
         st.caption("Unusual spikes with AI notes are computed for the built-in data only.")
@@ -243,7 +243,7 @@ def trends_tab(source, filters):
     shown = anomalies[anomalies["country"].isin(countries) & anomalies["category"].isin(categories)
                       & anomalies["trending_date"].between(start, end)]
     st.dataframe(shown[["trending_date", "country", "category", "new_videos", "baseline_median", "robust_z",
-                        "explanation", "top_titles"]], hide_index=True, use_container_width=True)
+                        "explanation", "top_titles"]], hide_index=True, width="stretch")
 
 
 def publish_time_tab(source, filters):
@@ -260,7 +260,7 @@ def publish_time_tab(source, filters):
     figure = px.imshow(grid, x=[f"{hour:02d}" for hour in range(24)], y=WEEKDAYS, color_continuous_scale="Blues",
                        labels={"x": "Upload hour (local time)", "y": "", "color": "% of videos"}, aspect="auto",
                        title=f"When trending videos in {UPLOAD_COUNTRIES[country][0]} were uploaded")
-    st.plotly_chart(figure, use_container_width=True)
+    st.plotly_chart(figure, width="stretch")
     st.info("This shows when trending videos were uploaded, not whether a time slot helps. In the project's analysis "
             "of India, the US and the UK, the "
             "channel explained over 200 times as much of a video's views as its upload hour; once channel and "
@@ -282,7 +282,7 @@ def countries_tab(source, filters):
     st.plotly_chart(px.bar(mix[mix["category"].isin(top_categories)], x="pct_of_videos", y="category",
                            color="country", barmode="group", orientation="h", color_discrete_map=COUNTRY_COLORS,
                            labels=AXIS_LABELS, height=550, title="Category mix: % of each country's trending videos"),
-                    use_container_width=True)
+                    width="stretch")
     overlap = query(f"""
         WITH filtered AS (SELECT country, video_id FROM trending_videos WHERE {where})
         SELECT a.country AS country, b.country AS also_trending_in, count(*) AS shared_videos,
@@ -291,7 +291,7 @@ def countries_tab(source, filters):
         JOIN (SELECT country, count(*) AS videos FROM filtered GROUP BY country) AS totals ON totals.country = a.country
         GROUP BY a.country, b.country ORDER BY a.country, b.country""", parameters)
     st.subheader("Videos that trended in more than one country")
-    st.dataframe(overlap, hide_index=True, use_container_width=True)
+    st.dataframe(overlap, hide_index=True, width="stretch")
     st.caption("The US and UK share about half their trending videos; India shares about 2% with either.")
 
 
@@ -310,7 +310,7 @@ def upload_countries_tab(source, filters):
                            color="country", barmode="group", orientation="h",
                            color_discrete_map={**COUNTRY_COLORS, upload_label: SECONDARY_INK}, labels=AXIS_LABELS,
                            height=600, title="Category mix: your upload against the built-in countries"),
-                    use_container_width=True)
+                    width="stretch")
     st.caption("The built-in countries cover 12 Aug 2020 to 15 Apr 2024; your upload covers its own dates, so "
                "differences can come from timing as well as from the market.")
     uploaded_ids = query(f"SELECT DISTINCT video_id FROM trending_videos WHERE {where}", parameters, source["key"])
@@ -321,7 +321,7 @@ def upload_countries_tab(source, filters):
         "shared_videos": [int(shared.get(country, 0)) for country in COUNTRIES],
     }).assign(pct_of_upload_videos=lambda table: (100 * table["shared_videos"] / len(uploaded_ids)).round(1))
     st.subheader("Uploaded videos that also trended in the built-in countries")
-    st.dataframe(overlap, hide_index=True, use_container_width=True)
+    st.dataframe(overlap, hide_index=True, width="stretch")
 
 
 @st.cache_data(show_spinner=False)
@@ -364,8 +364,8 @@ def ask_tab(source):
             st.warning("These numbers in the answer were not found in the query result: "
                        + ", ".join(result["unsupported_numbers"]))
         if result["chart"] is not None:
-            st.plotly_chart(result["chart"], use_container_width=True)
-        st.dataframe(result["rows"], hide_index=True, use_container_width=True)
+            st.plotly_chart(result["chart"], width="stretch")
+        st.dataframe(result["rows"], hide_index=True, width="stretch")
         if result["truncated"]:
             st.caption("Only the first 200 rows are shown.")
     with st.expander("SQL"):
@@ -402,7 +402,7 @@ def virality_tab():
     figure = px.bar(x=top.values, y=top.index, orientation="h", color=np.where(top.values > 0, "toward a long run",
                     "toward a short run"), color_discrete_map={"toward a long run": "#2a78d6", "toward a short run": "#e34948"},
                     labels={"x": "SHAP value (log-odds)", "y": "", "color": ""}, title="What drove this prediction")
-    st.plotly_chart(figure, use_container_width=True)
+    st.plotly_chart(figure, width="stretch")
     st.caption("Test ROC-AUC 0.790 against 0.698 for channel history alone. In 2023-2024 US and UK videos stayed "
                "longer than in training, so probabilities there run low. See evals/virality_report.md.")
 
@@ -435,7 +435,7 @@ def title_optimizer_tab():
         change=(100 * scores["change_in_probability"]).round(2).map("{:+.2f} pts".format),
         problems=scores["problems"].map(lambda problems: "; ".join(problems) if problems else ""),
     )[["source", "title", "long_run_chance", "change", "reason", "problems"]]
-    st.dataframe(shown, hide_index=True, use_container_width=True)
+    st.dataframe(shown, hide_index=True, width="stretch")
     st.caption("Suggestions flagged in the problems column add numbers or format labels the original did not have. "
                "Check every suggestion before using it.")
 
@@ -453,11 +453,11 @@ def topics_tab():
     sizes = (in_country[in_country["topic"] >= 0].groupby("name")["new_videos"].sum().nlargest(20).iloc[::-1])
     st.plotly_chart(px.bar(x=sizes.values, y=sizes.index, orientation="h", height=600,
                            color_discrete_sequence=["#2a78d6"], labels={"x": "Trending videos", "y": ""},
-                           title="Largest topics"), use_container_width=True)
+                           title="Largest topics"), width="stretch")
     chosen = st.multiselect("Topics over time", named["name"].tolist(), default=named["name"].head(3).tolist())
     monthly = in_country[in_country["name"].isin(chosen)].groupby(["month", "name"])["new_videos"].sum().reset_index()
     st.plotly_chart(px.line(monthly, x="month", y="new_videos", color="name", labels=AXIS_LABELS,
-                            title="New trending videos per month"), use_container_width=True)
+                            title="New trending videos per month"), width="stretch")
     st.info("YouTube Shorts left the US and UK trending lists around April 2022 and India's on 6 October 2022, "
             "which is why Shorts topics drop to zero. See notebooks/13_topics.ipynb.")
 
