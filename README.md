@@ -17,7 +17,8 @@
   <img src="https://img.shields.io/badge/MLflow-tracking-0194E2?logo=mlflow&logoColor=white" alt="MLflow">
   <img src="https://img.shields.io/badge/Groq-LLM-F55036" alt="Groq">
   <img src="https://img.shields.io/badge/Streamlit-app-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit">
-  <img src="https://img.shields.io/badge/tests-95%20passing-2EA44F" alt="95 tests passing">
+  <img src="https://img.shields.io/badge/Power%20BI-report-F2C811?logo=powerbi&logoColor=black" alt="Power BI">
+  <img src="https://img.shields.io/badge/tests-98%20passing-2EA44F" alt="98 tests passing">
 </p>
 
 <p align="center">
@@ -27,6 +28,7 @@
 <p align="center">
   <a href="#key-findings">Key findings</a> &middot;
   <a href="#the-app">The app</a> &middot;
+  <a href="#power-bi-report">Power BI</a> &middot;
   <a href="#ai-features-and-how-they-were-measured">AI features</a> &middot;
   <a href="#how-it-works">How it works</a> &middot;
   <a href="#what-did-not-work">What did not work</a> &middot;
@@ -44,6 +46,7 @@
 | **AI** | Text-to-SQL, a LightGBM virality predictor with SHAP, an LLM title optimizer, an auto-written insight report, anomaly detection with LLM notes, and BERTopic topic discovery |
 | **Checks** | Every AI feature has an evaluation file in [`evals/`](evals), and LLM numbers are checked against data by code, not by trust |
 | **App** | 8 tabs with filters, upload of any country's Kaggle file, deployed on Streamlit Community Cloud |
+| **Power BI** | A 7-page report on a star-schema model with 23 DAX measures, stored as code and checked against the Python results |
 
 ## Key findings
 
@@ -90,6 +93,19 @@ Kaggle dataset (any of its 11 countries) to run the same views on new data.
   <tr>
     <td><img src="images/publish_time.png" alt="Publish time tab"><br><b>Publish time.</b> When trending videos were uploaded, in local time, with the caveat that matters.</td>
     <td><img src="images/topics.png" alt="Topics tab"><br><b>Topics.</b> 56 topics found in title embeddings and named by an LLM.</td>
+  </tr>
+</table>
+
+## Power BI report
+
+The same data as a seven-page Power BI report: a star-schema model with 23 DAX measures, a dark theme matching the app, and pages for speed, engagement, publish time, markets, Netflix and spikes. The model and every page are generated as text files (TMDL and PBIR), so the report is reviewable in git, and every measure is checked against [expected values](powerbi/expected_values.md) computed by the Python code. Details in [powerbi/](powerbi/README.md).
+
+<p align="center"><img src="images/powerbi_overview.png" alt="Power BI overview page" width="900"></p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="images/powerbi_speed.png" alt="Power BI speed page"></td>
+    <td width="50%"><img src="images/powerbi_markets.png" alt="Power BI markets page"></td>
   </tr>
 </table>
 
@@ -221,8 +237,8 @@ reports/         findings, data quality, cleaning logs, insight report, anomalie
 evals/           evaluation reports and raw results for every AI feature
 models/          saved LightGBM boosters used by the app
 app/             Streamlit app, its slim requirements and its 26 MB data bundle
-powerbi/         Power BI export, DAX measures, theme, build guide and expected values
-tests/           95 tests: cleaning rules, leak-free features, SQL safety, number checks, uploads
+powerbi/         Power BI project (model and pages as code), DAX measures, theme and expected values
+tests/           98 tests: cleaning rules, leak-free features, SQL safety, number checks, uploads
 images/          screenshots used in this README
 ```
 
@@ -242,8 +258,7 @@ IMDb data is for personal and non-commercial use only.
 
 ## Next steps
 
-- Finish the Power BI report. The star-schema export, DAX measures, theme and a page-by-page build guide with
-  expected values are in [`powerbi/`](powerbi/README.md).
+- Publish the Power BI report to the Power BI service so it can be viewed without Power BI Desktop.
 - Retrain the virality model on 2023 and 2024 data to fix its drift, and test whether calibrating it per country
   closes the gap in US and UK probabilities.
 - Retrieval for the title optimizer: show the most similar past trending titles, found with the existing
